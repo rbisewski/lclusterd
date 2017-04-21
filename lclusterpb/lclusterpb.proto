@@ -1,0 +1,64 @@
+//
+// File: lclusterpb.proto
+//
+// Description: prototype for remote process calls
+//
+
+syntax = "proto3";
+
+package lclusterpb;
+
+// RPC service definition
+service Lclusterd {
+    rpc StartJob  (StartJobRequest)  returns (StartJobResponse)  {}
+    rpc StopJob   (StopJobRequest)   returns (StopJobResponse)   {}
+}
+
+// Start Job Request definition
+message StartJobRequest {
+
+    // Uuid
+    string uuid = 1;
+
+    // Brief description of the job
+    string name = 2;
+
+    // String representation of a POSIX command.
+    string command = 3;
+
+    // Job starting-time in seconds from epoch
+    uint64 start_time = 4;
+
+    // Job ending-time in seconds from epoch
+    uint64 end_time = 5;
+
+    // String representation of an IPv4 address or Hostname
+    string machine = 6;
+}
+
+// Start Job *Response* definition
+message StartJobResponse {
+
+    // Process id of the job
+    int64 pid = 1;
+
+    // Error string
+    string error = 2;
+}
+
+// Stop Job Request definition
+message StopJobRequest {
+
+    // Process id of the job to be stopped
+    int64 pid = 1;
+}
+
+// Stop Job *Response* definition
+message StopJobResponse {
+
+    // Result boolean, whether or this was able to successfully stop a job.
+    bool result = 1;
+
+    // Error string, if any.
+    string error = 2;
+}

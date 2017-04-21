@@ -11,6 +11,7 @@ package lclusterpb;
 // RPC service definition
 service Lclusterd {
     rpc StartJob  (StartJobRequest)  returns (StartJobResponse)  {}
+    rpc CheckJob  (CheckJobRequest)  returns (CheckJobResponse)  {}
     rpc StopJob   (StopJobRequest)   returns (StopJobResponse)   {}
 }
 
@@ -41,6 +42,23 @@ message StartJobResponse {
 
     // Process id of the job
     int64 pid = 1;
+
+    // Error string
+    string error = 2;
+}
+
+// Check Job Request definition
+message CheckJobRequest {
+
+    // Process id of the job
+    int64 pid = 1;
+}
+
+// Check Job *Response* definition
+message CheckJobResponse {
+
+    // Whether or not the job is currently active
+    bool result = 1;
 
     // Error string
     string error = 2;

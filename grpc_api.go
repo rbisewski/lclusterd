@@ -56,6 +56,49 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
     return response, err
 }
 
+//! Checks the status of a job
+/*
+ * @param    Context            current process context
+ * @param    CheckJobRequest    job end-user wants to status
+ *
+ * @return   CheckJobResponse   result of whether the job is active
+ * @return   error              error message, if any
+ */
+func (lcdsv *LclusterdServer) CheckJob(ctx context.Context,
+  cjr *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
+
+    // Input validation, make sure this actually got a proper request.
+    if cjr == nil {
+        return nil, fmt.Errorf("CheckJob() --> invalid input\n")
+    }
+
+    // Check if the etcd server contains the job in question.
+    job, err := etcdServer.getProcess(cjr.Pid)
+
+    // Create a new CheckJobResponse object
+    response := &pb.CheckJobResponse{}
+
+    // Safety check, make sure the job is well formed and that an error
+    // didn't occur during the call to the etcd server.
+    if job == nil || job.Uuid == "" || job.Command == "" ||
+      job.Machine == "" || err != nil {
+
+        // Set the result to be false.
+        response.Result = false
+        response.Error = err.Error()
+
+        // Pass back a response stating that the job has yet to occur.
+        return response, err
+    }
+
+    // Since the job was well formed and no error occurred, go ahead and
+    // state that the job is still working as intended.
+    response.Result = true
+
+    // Have successfully started the job, go ahead
+    return response, nil
+}
+
 //! Stops a job currently being ran
 /*
  * @param    Context            current process context

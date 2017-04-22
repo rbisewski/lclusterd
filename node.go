@@ -20,34 +20,6 @@ import (
 )
 
 //
-// Process state defines
-//
-const STOPPED = 0
-const RUNNING = 1
-const ABORTED = 2
-const ERROR   = 3
-
-//
-// Capabilities the libcontainer instances will need...
-//
-var lclusterc_caps = []string {
-                               "CAP_CHOWN",
-                               "CAP_DAC_OVERRIDE",
-                               "CAP_FSETID",
-                               "CAP_FOWNER",
-                               "CAP_MKNOD",
-                               "CAP_NET_RAW",
-                               "CAP_SETGID",
-                               "CAP_SETUID",
-                               "CAP_SETFCAP",
-                               "CAP_SETPCAP",
-                               "CAP_NET_BIND_SERVICE",
-                               "CAP_SYS_CHROOT",
-                               "CAP_KILL",
-                               "CAP_AUDIT_WRITE",
-                              }
-
-//
 // Node structure
 //
 type Node struct {
@@ -65,6 +37,182 @@ type Node struct {
     Container  libcontainer.BaseContainer
     Proc      *libcontainer.Process
 }
+
+//
+// NodeManager structure
+//
+type NodeManager struct {
+
+    // Array of pointers to the currently available
+    Nodelist []*Node
+}
+
+
+// ------------------------------
+// Node Manager Functions Section
+// ------------------------------
+
+
+//! Grabs the first available, unlocked node from Nodelist.
+/*
+ * @return     Node*    pointer to the first unlocked node
+ */
+func (nm *NodeManager) grabNode() *Node {
+
+    // If the node list is empty, send back nil
+    if len(nm.Nodelist) < 1 {
+        return nil
+    }
+
+    // Cycle thru all of the nodes...
+    for _, n := range nm.Nodelist {
+
+        // If a node that is unlocked is discovered...
+        if n.Locked == false {
+
+            // Return a pointer to this node.
+            return n
+        }
+    }
+
+    // If all of the nodes are locked, send back nil.
+    return nil
+}
+
+
+//! Stringifies the Nodelist, useful for listing or debugging, in a format
+//! as detailed below:
+//!
+//! ip addr      | job uuid | is locked?
+//! ------------------------------------
+//! 192.168.1.77 | 34F77AB2 | no
+//! 192.168.1.82 | C4F49A92 | no
+//!
+/*
+ * @return   string    list of nodes as string, in the above format
+ */
+func (nm *NodeManager) listNodes() string {
+
+    // If the node list is empty, send back a message that the node list
+    // appears to contain no nodes...
+    if len(nm.Nodelist) < 1 {
+        return "There are no nodes currently present in the list..."
+    }
+
+    // Variable declaration
+    var stringified_list_of_nodes string = ""
+
+    // Append the table titles and separator
+    stringified_list_of_nodes += "ip addr      | job uuid | is locked?\n"
+    stringified_list_of_nodes += "------------------------------------\n"
+
+    // Cycle thru all of the nodes...
+    for _, n := range nm.Nodelist {
+
+        // Assemble the given line...
+        line := n.Host + " | " + strconv.FormatInt(n.Job_uuid, 10) + " | "
+
+        // Set string based on whether the node is locked.
+        if n.Locked == false {
+            line += "no"
+        } else {
+            line += "yes"
+        }
+
+        // Append the line w/ newline char
+        stringified_list_of_nodes += line + "\n"
+    }
+
+    // Finally return the assembled stringified output.
+    return stringified_list_of_nodes
+}
+
+//! Returns all of the available nodes from the Nodelist
+/*
+ * @return    Node[]    array of all unlocked nodes
+ */
+func (nm *NodeManager) getNodes() []*Node {
+
+    // ensure the node manager actually has nodes
+    if len(nm.Nodelist) < 1 {
+        stdlog("NOTE: Node manager currently has zero nodes.")
+        return nil
+    }
+
+    // Make a node array to hold the unlocked nodes
+    active_nodes := make([]*Node, 0)
+
+    // Cycle thru all of the nodes...
+    for _, n := range nm.Nodelist {
+
+        // Set string based on whether the node is locked.
+        if n.Locked == false {
+            active_nodes = append(active_nodes, n)
+        }
+    }
+
+    // if active nodes is zero, send back nil
+    if len(active_nodes) < 1 {
+        stdlog("NOTE: Node manager has zero unlocked nodes.")
+        return nil
+    }
+
+    // send back the filled array
+    return active_nodes
+}
+
+
+//! Remove a node from the Nodelist
+/*
+ * @return     error    resultant error message, if any
+ */
+func (nm *NodeManager) removeNode(n *Node) error {
+
+    // input validation
+    if n == nil {
+        return errorf("removeNode() --> invalid input")
+    }
+
+    // safety check, ensure the node manager *actually* has nodes
+    if len(nm.Nodelist) < 1 {
+        stdlog("---------------------------------------------------------")
+        stdlog("WARNING: Node manager currently has zero nodes, so it is ")
+        stdlog("         unable to remove Node w/ Uuid:")
+        stdlog("                                                         ")
+        stdlog(strconv.FormatInt(n.Job_uuid, 10))
+        stdlog("---------------------------------------------------------")
+        return errorf("removeNode() --> cannot remove node from empty list")
+    }
+
+    // Cycle thru all of the nodes...
+    for i, node := range nm.Nodelist {
+
+        // Node w/ requested job was found?
+        if node.Job_uuid == n.Job_uuid {
+
+            // mention to the end-user that is node was found and removed
+            stdlog("Succesfully removed node w/ uuid of:")
+            stdlog(strconv.FormatInt(n.Job_uuid, 10))
+            stdlog("                                    ")
+
+            // attempt to remove it from the manager's Nodelist array
+            nm.Nodelist = append(nm.Nodelist[:i], nm.Nodelist[i+1:]...)
+
+            // return nil here since everything worked as expected
+            return nil
+        }
+    }
+
+    // Since the node list did not contain the node in question, throw an
+    // error mentioning that the node does not exist.
+    return errorf("removeNode() --> attempted to remove node that does not exist")
+}
+
+
+// ------------------------------
+// Libcontainer Functions Section
+// ------------------------------
+
 
 //! Init basic OS elements of libcontainer
 /*
@@ -111,7 +259,7 @@ func init() {
  *
  * @return    error   error message, if any
  */
-func startProcess(sjr pb.StartJobRequest, rootfs string) (*Node, error) {
+func (nm *NodeManager) startProcess(sjr pb.StartJobRequest, rootfs string) (*Node, error) {
 
     // input validation
     if len(rootfs) < 1 {
@@ -276,11 +424,11 @@ func startProcess(sjr pb.StartJobRequest, rootfs string) (*Node, error) {
  *
  * @return    error   error message, if any
  */
-func stopProcess(node *Node) error {
+func (nm *NodeManager) stopProcess(node *Node) error {
 
     // input validation
     if node == nil {
-        return errorf("Error: node does not exist!")
+        return errorf("stopProcess() --> Error: node does not exist!")
     }
 
     // ensure the node actually has a running process

@@ -7,7 +7,6 @@
 package main
 
 import (
-    "fmt"
     "golang.org/x/net/context"
     pb "./lclusterpb"
 )
@@ -29,7 +28,7 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
 
     // Input validation, make sure this actually got a proper request.
     if sjr == nil {
-        return nil, fmt.Errorf("StartJob() --> invalid input\n")
+        return nil, errorf("StartJob() --> invalid input\n")
     }
 
     // Add the new job to the queue.
@@ -69,7 +68,7 @@ func (lcdsv *LclusterdServer) CheckJob(ctx context.Context,
 
     // Input validation, make sure this actually got a proper request.
     if cjr == nil {
-        return nil, fmt.Errorf("CheckJob() --> invalid input\n")
+        return nil, errorf("CheckJob() --> invalid input\n")
     }
 
     // Check if the etcd server contains the job in question.
@@ -112,7 +111,7 @@ func (lcdsv *LclusterdServer) StopJob(ctx context.Context,
 
     // Input validation, make sure this actually got a proper stop request.
     if sjr == nil {
-        return nil, fmt.Errorf("StartJob() --> invalid input\n")
+        return nil, errorf("StartJob() --> invalid input\n")
     }
 
     // Grab a reference to the desired process.

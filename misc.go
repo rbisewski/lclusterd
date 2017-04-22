@@ -14,6 +14,23 @@ import (
     "time"
 )
 
+//! Wrapper to make golang error funcs seem more C-like
+/*
+ * @param     string    ASCII to dump to stdout
+ *
+ * @return    error     error message, if any
+ */
+func errorf(ascii string) error {
+
+    // Input validation
+    if len(ascii) < 1 {
+        return nil
+    }
+
+    // Attempt to print the content to stdout
+    return fmt.Errorf(ascii)
+}
+
 //! Wrapper to make golang print funcs seem more C-like
 /*
  * @param     string    ASCII to dump to stdout

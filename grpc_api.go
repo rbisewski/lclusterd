@@ -32,7 +32,7 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
     }
 
     // Add the new job to the queue.
-    pid, err := etcdServer.addJobToQueue((*Job)(sjr))
+    err := etcdServer.addJobToQueue((*Job)(sjr))
 
     // Create a new StartJobResponse object
     response := &pb.StartJobResponse{}
@@ -40,19 +40,15 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
     // Safety check, make sure an error didn't occur.
     if err != nil {
 
-        // Set the pid to -1 and pass along the error.
-        response.Pid = -1
-        response.Error = err.Error()
-
         // Pass back the failed job creation.
-        return response, err
+        return nil, err
     }
 
     // Assign the pid of the new job.
-    response.Pid = pid
+    response.Pid = 1
 
     // Have successfully started the job, go ahead 
-    return response, err
+    return response, nil
 }
 
 //! Checks the status of a job

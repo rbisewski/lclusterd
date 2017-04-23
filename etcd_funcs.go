@@ -59,15 +59,27 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 
 //! Adds a job to the scheduler queue
 /*
- * TODO: complete this function
- *
  * @param    Job      job to add to queue
  *
- * @return   int64    process id
  * @return   error    error message, if any
  */
-func (inst *EtcdInstance) addJobToQueue(j *Job) (int64, error) {
-    return -1, nil
+func (inst *EtcdInstance) addJobToQueue(j *Job) (error) {
+
+    // input validation
+    if j == nil {
+        return errorf("addJobToQueue() --> invalid input")
+    }
+
+    // ensure the job command has a valid string length
+    if len(j.Command) < 1 {
+        return errorf("addJobToQueue() --> improper command given")
+    }
+
+    // attempt to add the job to the back of the scheduler queue
+    err := scheduler.addJob(j.Command)
+
+    // if there was an error, go ahead and pass it back
+    return err
 }
 
 //! Grab the process details of a given pid

@@ -29,6 +29,9 @@ var scheduler *Scheduler
 // Rootfs Location
 var rootfs string
 
+// Incremental Node number
+var incrementalNodeNumber int64 = 0
+
 // Initialize the flags beforehand.
 func init() {
 

@@ -40,6 +40,15 @@ func (sch *Scheduler) addJob(cmd string) error {
     // append the job to the back of the queue
     sch.Queue = append(sch.Queue, j)
 
+    // Announce that the job was added to the scheduler since
+    stdlog("                                 ")
+    stdlog("---------------------------------")
+    stdlog("A new job was added to the queue.")
+    stdlog("                                 ")
+    stdlog("Command: " + cmd)
+    stdlog("---------------------------------")
+    stdlog("                                 ")
+
     // if the program got to this point, assume everything worked as
     // expected...
     return nil

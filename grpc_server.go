@@ -29,6 +29,9 @@ func startServerInstanceOfGRPC() {
     // Initialize gRPC to get a server.
     remoteProcessCallServer := grpc.NewServer()
 
+    // Mention that the grpc server has now started.
+    stdlog("gRPC server startup successful.")
+
     // Registering grpc with the lclusterd server
     pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
 

@@ -110,7 +110,7 @@ func main() {
         return
     }
 
-    // Esclate the etcd server instance to become the global etcd server.
+    // Escalate the etcd server instance to become the global etcd server.
     etcdServer = etcd_server_inst
 
     // Mention that the etcd server has now started.
@@ -130,7 +130,4 @@ func main() {
     // In order to register all of the elements in the cluster, this grpc
     // server needs to exist to have something they can return back to.
     startServerInstanceOfGRPC()
-
-    // Mention that the grpc server has now started.
-    stdlog("gRPC server startup successful.")
 }

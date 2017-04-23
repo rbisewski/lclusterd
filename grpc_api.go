@@ -32,10 +32,7 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
     }
 
     // Add the new job to the queue.
-    err := etcdServer.addJobToQueue((*Job)(sjr))
-
-    // Create a new StartJobResponse object
-    response := &pb.StartJobResponse{}
+    uuid, err := etcdServer.addJobToQueue(sjr.Command)
 
     // Safety check, make sure an error didn't occur.
     if err != nil {
@@ -44,55 +41,82 @@ func (lcdsv *LclusterdServer) StartJob(ctx context.Context,
         return nil, err
     }
 
-    // Assign the pid of the new job.
-    response.Pid = 1
+    // Create a new StartJobResponse object
+    response := &pb.StartJobResponse{Uuid: uuid}
 
     // Have successfully started the job, go ahead 
     return response, nil
 }
 
-//! Checks the status of a job
+
+//! Returns the status of a job
 /*
- * @param    Context            current process context
- * @param    CheckJobRequest    job end-user wants to status
+ * @param    Context             current process context
+ * @param    CheckJobRequest     job to be stat'd
  *
- * @return   CheckJobResponse   result of whether the job is active
- * @return   error              error message, if any
+ * @return   uint                response code:
+ *                               0 -> unknown
+ *                               1 -> job does not exist
+ *                               2 -> job is queued
+ *                               3 -> job is active
+ *
+ * @return   error               error message, if any
  */
 func (lcdsv *LclusterdServer) CheckJob(ctx context.Context,
   cjr *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
 
-    // Input validation, make sure this actually got a proper request.
-    if cjr == nil {
-        return nil, errorf("CheckJob() --> invalid input\n")
-    }
+      // variable declaration
+      response := &pb.CheckJobResponse{}
 
-    // Check if the etcd server contains the job in question.
-    job, err := etcdServer.getProcess(cjr.Pid)
+      // input validation
+      if cjr == nil || len(cjr.Uuid) < 1 {
+          response.Result = 0
+          response.Error = "CheckJob() --> invalid input"
+          return response, errorf(response.Error)
+      }
 
-    // Create a new CheckJobResponse object
-    response := &pb.CheckJobResponse{}
+      // have the scheduler cycle thru the queue
+      thatJobIsQueued, err := scheduler.jobExists(cjr.Uuid)
 
-    // Safety check, make sure the job is well formed and that an error
-    // didn't occur during the call to the etcd server.
-    if job == nil || job.Uuid == "" || job.Command == "" ||
-      job.Machine == "" || err != nil {
+      // if an error occurs, pass back an 'unknown'
+      if err != nil {
+          response.Result = 0
+          response.Error = "CheckJob() --> scheduler was unable to query job"
+          return response, errorf(response.Error)
+      }
 
-        // Set the result to be false.
-        response.Result = false
-        response.Error = err.Error()
+      // if the scheduler found the job, pass back an int telling that the
+      // 'job is queued'
+      if thatJobIsQueued {
+          response.Result = 2
+          response.Error = ""
+          return response, nil
+      }
 
-        // Pass back a response stating that the job has yet to occur.
-        return response, err
-    }
+      // check if that job is actively running on one of the nodes
+      thatJobIsRunning, err := nodeManager.jobRunningOnNode(cjr.Uuid)
 
-    // Since the job was well formed and no error occurred, go ahead and
-    // state that the job is still working as intended.
-    response.Result = true
+      // if an error occurs, pass back an 'unknown'
+      if err != nil {
+          response.Result = 0
+          response.Error = "CheckJob() --> node manager unable to query job"
+          return response, errorf(response.Error)
+      }
 
-    // Have successfully started the job, go ahead
-    return response, nil
+      // if the job is running, pass back the relevant int
+      if thatJobIsRunning {
+          response.Result = 3
+          response.Error = ""
+          return response, nil
+      }
+
+      // finally, if the job is neither queued nor running, pass back the
+      // int that states the 'job does not exist'
+      response.Result = 1
+      response.Error = ""
+      return response, nil
 }
+
 
 //! Stops a job currently being ran
 /*
@@ -111,7 +135,7 @@ func (lcdsv *LclusterdServer) StopJob(ctx context.Context,
     }
 
     // Grab a reference to the desired process.
-    process_ref, err := etcdServer.getProcess(sjr.Pid)
+    process_ref, err := etcdServer.getProcess(sjr.Uuid)
 
     // Safety check, ensure that errors have not occurred.
     if err != nil {
@@ -135,12 +159,3 @@ func (lcdsv *LclusterdServer) StopJob(ctx context.Context,
     // Otherwise return success.
     return &pb.StopJobResponse{Result: true}, nil
 }
-
-//! Returns the status of a job
-/*
- * TODO: complete this function
- *
- * @param
- *
- * @return    
- */

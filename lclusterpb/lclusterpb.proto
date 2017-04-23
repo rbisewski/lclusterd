@@ -18,30 +18,15 @@ service Lclusterd {
 // Start Job Request definition
 message StartJobRequest {
 
-    // Uuid
-    string uuid = 1;
-
-    // Brief description of the job
-    string name = 2;
-
     // String representation of a POSIX command.
-    string command = 3;
-
-    // Job starting-time in seconds from epoch
-    uint64 start_time = 4;
-
-    // Job ending-time in seconds from epoch
-    uint64 end_time = 5;
-
-    // String representation of an IPv4 address or Hostname
-    string machine = 6;
+    string command = 1;
 }
 
 // Start Job *Response* definition
 message StartJobResponse {
 
     // Process id of the job
-    int64 pid = 1;
+    string uuid = 1;
 
     // Error string
     string error = 2;
@@ -50,15 +35,15 @@ message StartJobResponse {
 // Check Job Request definition
 message CheckJobRequest {
 
-    // Process id of the job
-    int64 pid = 1;
+    // Uuid of the job
+    string uuid = 1;
 }
 
 // Check Job *Response* definition
 message CheckJobResponse {
 
     // Whether or not the job is currently active
-    bool result = 1;
+    uint32 result = 1;
 
     // Error string
     string error = 2;
@@ -67,8 +52,8 @@ message CheckJobResponse {
 // Stop Job Request definition
 message StopJobRequest {
 
-    // Process id of the job to be stopped
-    int64 pid = 1;
+    // Uuid of the job to be stopped
+    string uuid = 1;
 }
 
 // Stop Job *Response* definition

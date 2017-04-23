@@ -10,7 +10,6 @@ import (
     "fmt"
     "flag"
     "time"
-    "strconv"
 
     "golang.org/x/net/context"
 
@@ -21,7 +20,7 @@ import (
 // Variables to hold the result of argument flags.
 var addjob string
 var checkjob string
-var removejob int64 = -1
+var removejob string
 
 // Initialize the flags beforehand.
 func init() {
@@ -35,8 +34,8 @@ func init() {
       "Uuid of the job to query status.")
 
     // Argument flag for when the end-user wants to remove a job
-    flag.Int64Var(&removejob, "removejob", 0,
-      "Pid of the job to be removed.")
+    flag.StringVar(&removejob, "removejob", "",
+      "Uuid of the job to be removed.")
 }
 
 //! Add a job to the server.
@@ -70,24 +69,9 @@ func addJobToServer(cmd string) int64 {
     // Create an lcluster client
     lcluster_client := pb.NewLclusterdClient(connection)
 
-    //
-    // TODO: implement logic obtain these value via the machine node
-    //       manager, for now just use these bland defaults
-    //
-    var uuid string       = "default"
-    var name string       = "default"
-    var start_time uint64 = 0
-    var end_time uint64   = 0
-    var machine string    = "127.0.0.1"
-
     // Start a new job request using the data obtained above.
     request := &pb.StartJobRequest{
-        Uuid: uuid,
-        Name: name,
         Command: addjob,
-        StartTime: start_time,
-        EndTime: end_time,
-        Machine: machine,
     }
 
     // Grab the current background context.
@@ -109,10 +93,11 @@ func addJobToServer(cmd string) int64 {
     // Since the job was started properly, go ahead and print out a message
     // telling the end-user the uuid of the new job.
     fmt.Printf("The requested job has been added to queue, has pid of " +
-      strconv.FormatInt(response.GetPid(), 10) + "\n")
+      response.GetUuid() + "\n")
 
     // Return the resulting start job response uuid.
-    return response.GetPid()
+    //return response.GetUuid()
+    return -1
 }
 
 //! Print out the list of jobs currently on the server.
@@ -141,10 +126,10 @@ func checkJobOnServer(uuid string) {
  *
  * @return   none
  */
-func removeJobFromServer(pid int64) bool {
+func removeJobFromServer(uuid string) bool {
 
     // Input validation
-    if pid < 1 {
+    if len(uuid) < 1 {
         fmt.Printf("addJobToServer() --> invalid input")
         return false
     }
@@ -167,7 +152,7 @@ func removeJobFromServer(pid int64) bool {
     lcluster_client := pb.NewLclusterdClient(connection)
 
     // Assemble a stop job request object
-    request := & pb.StopJobRequest{ Pid: pid }
+    request := & pb.StopJobRequest{ Uuid: uuid }
 
     // Grab the current background context.
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -220,12 +205,11 @@ func main() {
 
     // Safety check, ensure that remove job was given a value of 1 or
     // higher.
-    if removejob > 0 {
-        flag.Usage()
+    if len(removejob) > 0 {
+        removeJobFromServer(removejob)
         return
     }
 
-    // If the program got this far, attempt to use the provided removejob
-    // argument.
-    removeJobFromServer(removejob)
+    // Otherwise just print the usage information
+    flag.Usage()
 }

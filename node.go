@@ -178,6 +178,43 @@ func (nm *NodeManager) getNodes() []*Node {
     return active_nodes
 }
 
+//! Check if a job of a given uuid is currently running on one of the nodes
+/*
+ * @return    bool    whether or not the job is running
+ * @return    error   error message, if any
+ */
+func (nm *NodeManager) jobRunningOnNode(uuid string) (bool, error) {
+
+    // input validation
+    if len(uuid) < 1 {
+        return false, errorf("jobRunningOnNode() --> invalid input")
+    }
+
+    // grab a list of active nodes
+    active_nodes := nm.getNodes()
+
+    // if there are no active nodes, return false
+    if active_nodes == nil {
+        return false, nil
+    }
+
+    // since there is at least 1 node, cycle thru them...
+    for _, n := range active_nodes {
+
+        // grab the uuid of the job the node is running
+        node_job := strconv.FormatInt(n.Job_uuid, 10)
+
+        // if a job uuid on a node matches the given uuid, then return true
+        // since the job is still running on one of the nodes
+        if node_job == uuid {
+            return true, nil
+        }
+    }
+
+    // otherwise the job is not running, so return false
+    return false, nil
+}
+
 
 //! Remove a node from the Nodelist
 /*
@@ -300,7 +337,13 @@ func (nm *NodeManager) startNewNode(sjr pb.StartJobRequest, path string) (*Node,
     containerName := "[" + path + "]-" + strconv.FormatInt(containerUuid, 10)
 
     // grab a host for the container
-    containerHost := sjr.Machine
+    containerHost, err := os.Hostname()
+
+    // safety check, ensure no error occurred
+    if err != nil {
+        return nil, errorf("startProcess() --> unable to determine the " +
+                           "given hostname")
+    }
 
     // use syscall to define the mounting flags
     defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV

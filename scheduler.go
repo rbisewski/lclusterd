@@ -54,6 +54,35 @@ func (sch *Scheduler) addJob(cmd string) error {
     return nil
 }
 
+//! Checks if a job of a given uuid already exists
+/*
+ * @param    string   uuid of the job in question
+ *
+ * @return   bool     whether or not the job exists
+ * @return   error    error message, if any
+ */
+func (sch *Scheduler) jobExists(uuid string) (bool, error) {
+
+    // input validation
+    if len(uuid) < 1 {
+        return false, errorf("jobExists() --> invalid input")
+    }
+
+    // Cycle thru all of the jobs...
+    for _, j := range sch.Queue {
+
+        // If a job with that uuid is discovered...
+        if j.Uuid == uuid {
+
+            // as the job was removed successful, return nil
+            return true, nil
+        }
+    }
+
+    // otherwise the job is not present in the queue
+    return false, nil
+}
+
 
 //! Removes a job to the queue of the scheduler
 /*
@@ -121,7 +150,7 @@ func (sch *Scheduler) runJob() error {
     if thereAreZeroNodes {
 
         // assemble a start job request
-        sjr := pb.StartJobRequest{Command: j.Command, Machine: j.Machine}
+        sjr := pb.StartJobRequest{Command: j.Command}
 
         // tell the node manager to start a container
         tmpNode, errDuringNodeStartup := nodeManager.startNewNode(sjr, rootfs)

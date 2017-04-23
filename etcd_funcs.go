@@ -59,39 +59,35 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 
 //! Adds a job to the scheduler queue
 /*
- * @param    Job      job to add to queue
+ * @param    string   command to be executed
  *
+ * @return   uuid     newly generated job uuid
  * @return   error    error message, if any
  */
-func (inst *EtcdInstance) addJobToQueue(j *Job) (error) {
-
-    // input validation
-    if j == nil {
-        return errorf("addJobToQueue() --> invalid input")
-    }
+func (inst *EtcdInstance) addJobToQueue(cmd string) (string, error) {
 
     // ensure the job command has a valid string length
-    if len(j.Command) < 1 {
-        return errorf("addJobToQueue() --> improper command given")
+    if len(cmd) < 1 {
+        return "1",errorf("addJobToQueue() --> improper command given")
     }
 
     // attempt to add the job to the back of the scheduler queue
-    err := scheduler.addJob(j.Command)
+    //err := scheduler.addJob(j.Command)
 
     // if there was an error, go ahead and pass it back
-    return err
+    return "1", nil
 }
 
 //! Grab the process details of a given pid
 /*
  * TODO: complete this function
  *
- * @return   int64      process id
+ * @return   string     job uuid
  *
- * @return   Process    details of a given process
+ * @return   Job        details of a given process
  * @return   error      error message, if any
  */
-func (inst *EtcdInstance) getProcess(pid int64) (*Job, error) {
+func (inst *EtcdInstance) getProcess(uuid string) (*Job, error) {
     return &Job{}, nil
 }
 

@@ -18,6 +18,13 @@ const grpcPort        = ":64051"
 // Etcd grace period, in seconds
 const etcdGracePeriod = 5
 
+// Variables needed by etcd to store values.
+const nodes_dir        = "/nodes"
+const jobs_dir         = "/jobs"
+const queue_dir        = "/queue"
+const failed_nodes_dir = "/failed_nodes"
+const warned_jobs_dir  = "/warned_jobs"
+
 //
 // Process state defines
 //

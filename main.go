@@ -20,6 +20,12 @@ var namespace string
 // Etcd Server
 var etcdServer *EtcdInstance
 
+// Node Manager
+var nodeManager *NodeManager
+
+// Scheduler
+var scheduler *Scheduler
+
 // Rootfs Location
 var rootfs string
 
@@ -64,8 +70,12 @@ func main() {
         return
     }
 
-    // TODO: do a safety check to ensure that the rootfs is actually a
+    // Do a safety check to ensure that the rootfs is actually a
     // valid POSIX directory location, and that it actually exists.
+    if !directoryExists(rootfs) {
+        printf("Error: the following directory does not exist: " + rootfs)
+        return
+    }
 
     // Having confirmed that the namespace and rootfs location exists,
     // background a checker loop to determine if a signal flag to terminate
@@ -85,8 +95,8 @@ func main() {
     // Print out some informative information about how the rootfs dir.
     stdlog("Rootfs Location: " + rootfs)
 
-    // Go ahead and start the etcd instance.
-    etcdServer, err := CreateEtcdInstance(etcdSocket)
+    // Go ahead and start the etcd server instance.
+    etcd_server_inst, err := CreateEtcdInstance(etcdSocket)
 
     // Safety check, ensure that no errors have occurred during startup of
     // the EtcdServer. If it fails to start, go ahead and terminate the
@@ -97,17 +107,27 @@ func main() {
         return
     }
 
+    // Esclate the etcd server instance to become the global etcd server.
+    etcdServer = etcd_server_inst
+
     // Mention that the etcd server has now started.
     stdlog("Etcd server startup successful.")
 
-    // TODO: delete this warning silencer
-    etcdServer = etcdServer
+    // Go ahead and start the Scheduler.
+    queue       := make([]*Job, 0)
+    scheduler    = &Scheduler{Queue: queue}
 
-    // TODO: Go ahead and start the Scheduler.
+    // Go ahead and start the Node Manager.
+    nl          := make([]*Node,0)
+    nodeManager  = &NodeManager{Nodelist: nl}
 
-    // TODO: Go ahead and start the Node Manager.
+    // Mention that the node manager has now started.
+    stdlog("Node manager startup successful.")
 
     // In order to register all of the elements in the cluster, this grpc
     // server needs to exist to have something they can return back to.
     startServerInstanceOfGRPC()
+
+    // Mention that the grpc server has now started.
+    stdlog("gRPC server startup successful.")
 }

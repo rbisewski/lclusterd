@@ -9,6 +9,7 @@ package main
 
 import (
     "fmt"
+    "io/ioutil"
     "os"
     "os/signal"
     "time"
@@ -66,6 +67,31 @@ func stdlog(ascii string) {
 
     // Append the timestamp to the string message.
     printf("[" + currentTime + "] " + ascii)
+}
+
+//! Determine if a given directory location actually exists.
+/*
+ * @param     string    location of the form: /path/to/directory/
+ *
+ * @return    bool      whether or not this location is a POSIX dir
+ */
+func directoryExists(path string) bool {
+
+    // input validation
+    if len(path) < 1 {
+        return false
+    }
+
+    // attempt to read the directory and its contents, if any
+    _, err := ioutil.ReadDir(path)
+
+    // if an error occurred, then assume this is probably not a directory
+    if err != nil {
+        return false
+    }
+
+    // otherwise this succeeded, in which case return true
+    return true
 }
 
 //! Determine if a SIGINT was thrown, and if so, handle it.

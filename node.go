@@ -48,6 +48,23 @@ type NodeManager struct {
 }
 
 
+// ----------------------
+// Node Functions Section
+// ----------------------
+
+func (n *Node) startJob(j *Job) error {
+
+    // input validation
+    if j == nil {
+        return errorf("Node.startJob() --> invalid input")
+    }
+
+    // TODO: implement function
+
+    // if the job was added successfully, go ahead and return
+    return nil
+}
+
 // ------------------------------
 // Node Manager Functions Section
 // ------------------------------
@@ -255,19 +272,20 @@ func init() {
 
 //! Function to start a new process
 /*
- * @param     Node    given node
+ * @param     Node      given node
+ * @param     string    location in format of /path/to/rootfs
  *
- * @return    error   error message, if any
+ * @return    error     error message, if any
  */
-func (nm *NodeManager) startProcess(sjr pb.StartJobRequest, rootfs string) (*Node, error) {
+func (nm *NodeManager) startNewNode(sjr pb.StartJobRequest, path string) (*Node, error) {
 
     // input validation
-    if len(rootfs) < 1 {
+    if len(path) < 1 {
         return nil, errorf("startProcess() --> unable to start job")
     }
 
     // containerize the given rootfs location
-    containerizer, err := libcontainer.New(rootfs, libcontainer.Cgroupfs)
+    containerizer, err := libcontainer.New(path, libcontainer.Cgroupfs)
 
     // safety check, ensure no error occurred
     if err != nil {
@@ -279,19 +297,17 @@ func (nm *NodeManager) startProcess(sjr pb.StartJobRequest, rootfs string) (*Nod
     containerUuid := time.Now().UnixNano()
 
     // generate container name
-    containerName := "[" + rootfs + "]-" + strconv.FormatInt(containerUuid, 10)
+    containerName := "[" + path + "]-" + strconv.FormatInt(containerUuid, 10)
 
     // grab a host for the container
-    //
-    // TODO: implement this
-    containerHost := "127.0.0.2"
+    containerHost := sjr.Machine
 
     // use syscall to define the mounting flags
     defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
 
     // assemble a libcontainer config
     config := &configs.Config{
-        Rootfs: rootfs,
+        Rootfs: path,
         Capabilities: &configs.Capabilities {
             Bounding: lclusterc_caps,
             Permitted: lclusterc_caps,
@@ -390,7 +406,7 @@ func (nm *NodeManager) startProcess(sjr pb.StartJobRequest, rootfs string) (*Nod
 
     // assemble a process for the node
     process := &libcontainer.Process{
-        Args:   []string{"/bin/bash"},
+        Args:   []string{"/bin/bash", sjr.Command},
         Env:    []string{"PATH=/bin"},
         Stdin:  os.Stdin,
         Stdout: os.Stdout,

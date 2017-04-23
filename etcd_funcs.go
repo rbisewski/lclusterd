@@ -57,6 +57,41 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
     return inst, nil
 }
 
+//! Creates the directories needed by the rootfs
+/*
+ * @return    error   message of the error, nil if none
+ */
+func (inst *EtcdInstance) generateRootfsDirs() error {
+
+    /*
+    // have the server start a new key-value storage
+    kvc := client.NewKV(inst.internal)
+
+    // grab the context
+    ctx, cancel := context.WithTimeout(context.Background(),
+      etcdGracePeriod * time.Second)
+
+    // check if the /nodes dir exists
+    _, err := kvc.Txn(ctx).
+        If(client.Compare(client.Value(nodes_dir), "=", "nodes_dir"))
+        Then().
+        Else(client.OpPut(nodes_dir, "nodes_dir"))
+        Commit()
+
+    // Cancel the current context as it is no longer needed.
+    cancel()
+
+    // if an error message was found, return it
+    if err != nil {
+        printf("CreateEtcdInstance() --> unable to generate rootfs dirs")
+        return err
+    }
+*/
+    // otherwise everything could be created properly, so go ahead and
+    // return no error
+    return nil
+}
+
 //! Adds a job to the scheduler queue
 /*
  * @param    string   command to be executed

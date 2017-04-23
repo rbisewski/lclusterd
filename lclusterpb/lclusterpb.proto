@@ -12,6 +12,7 @@ package lclusterpb;
 service Lclusterd {
     rpc StartJob  (StartJobRequest)  returns (StartJobResponse)  {}
     rpc CheckJob  (CheckJobRequest)  returns (CheckJobResponse)  {}
+    rpc ListJobs  (ListJobsRequest)  returns (ListJobsResponse)  {}
     rpc StopJob   (StopJobRequest)   returns (StopJobResponse)   {}
 }
 
@@ -44,6 +45,23 @@ message CheckJobResponse {
 
     // Whether or not the job is currently active
     uint32 result = 1;
+
+    // Error string
+    string error = 2;
+}
+
+// List Job Request definition
+message ListJobsRequest {
+
+    // Error string
+    string error = 1;
+}
+
+// Check Job *Response* definition
+message ListJobsResponse {
+
+    // Queue array
+    string qcontents = 1;
 
     // Error string
     string error = 2;

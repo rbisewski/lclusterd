@@ -113,6 +113,16 @@ func main() {
     // Escalate the etcd server instance to become the global etcd server.
     etcdServer = etcd_server_inst
 
+    // generate the rootfs dirs for the etcd key-values
+    err = etcdServer.generateRootfsDirs()
+
+    // safety check, ensure the dirs could actually be made properly
+    if err != nil {
+        stdlog(err.Error())
+        stdlog("Warning: Unable to assemble rootfs dirs!")
+        return
+    }
+
     // Mention that the etcd server has now started.
     stdlog("Etcd server startup successful.")
 

@@ -117,6 +117,18 @@ func (lcdsv *LclusterdServer) CheckJob(ctx context.Context,
       return response, nil
 }
 
+//! Returns a list of jobs
+/*
+ * @param    Context             current process context
+ * @param    ListJobsRequest     job to be stat'd
+ *
+ * @param    ListJobsResponse    contents of job queue
+ * @return   error               error message, if any
+ */
+func (lcdsv *LclusterdServer) ListJobs(ctx context.Context,
+  cjr *pb.ListJobsRequest) (*pb.ListJobsResponse, error) {
+      return &pb.ListJobsResponse{Qcontents: ""}, nil
+}
 
 //! Stops a job currently being ran
 /*

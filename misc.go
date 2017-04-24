@@ -8,10 +8,13 @@
 package main
 
 import (
+    "crypto/rand"
+    "encoding/base64"
     "fmt"
     "io/ioutil"
     "os"
     "os/signal"
+    "strings"
     "time"
 )
 
@@ -94,6 +97,24 @@ func directoryExists(path string) bool {
     return true
 }
 
+//! Function to grab the hostname at a given context
+/*
+ * @return    string    hostname as a string
+ */
+func getHostname() string {
+
+    // attempt to grab the hostname
+    hostname, err := os.Hostname()
+
+    // safety check, ensure no error occurred
+    if err != nil {
+        return "n/a"
+    }
+
+    // otherwise this has a hostname, go ahead and pass it back
+    return hostname
+}
+
 //! Determine if a SIGINT was thrown, and if so, handle it.
 /*
  * @return    none
@@ -114,4 +135,51 @@ func loopUtilSIGINT() {
 
     // Send the exit.
     os.Exit(0)
+}
+
+//! Spawns a pseudo-random string based on the Unix timestamp
+/*
+ * @param    int       number of bytes
+ *
+ * @return   string    pseudo-random string
+ */
+func spawnPseudorandomString(num int) string {
+
+    // handle the case where an end user might enter 0 or less
+    if num < 1 {
+        return ""
+    }
+
+    // assign a chunk of memory for holding the bytes
+    byteArray := make([]byte, num)
+
+    // populate the byte array with cryptographically secure pseudo-random
+    // numbers, up to a max of `num` as per the param to this function
+    _, err := rand.Read(byteArray)
+
+    // safety check, ensure no error occurred
+    if err != nil {
+        stdlog("spawnPseudorandomString() --> unable to spawn crypto num!")
+        return ""
+    }
+
+    // base64 encode the result
+    pseudoRandStr := base64.URLEncoding.EncodeToString(byteArray)
+
+    // safety check, ensure no error occurred
+    if len(pseudoRandStr) < 1 {
+        stdlog("spawnPseudorandomString() --> unable to base64 encode!")
+        return ""
+    }
+
+    // trim away any = chars since they are not needed
+    pseudoRandStr = strings.Trim(pseudoRandStr,"=")
+
+    // replace certain non-alpha chars with alphas, if any
+    pseudoRandStr = strings.Replace(pseudoRandStr,"-","ww",-1)
+    pseudoRandStr = strings.Replace(pseudoRandStr,"+","vv",-1)
+    pseudoRandStr = strings.Replace(pseudoRandStr,"_","uu",-1)
+
+    // otherwise return the (sufficiently?) random base64 string
+    return pseudoRandStr
 }

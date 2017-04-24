@@ -15,14 +15,17 @@ function.
 The program itself was designed around a standard Debian Linux environment,
 with the following requirements:
 
+* docker
+* etcd 
+* libcontainer 
 * linux kernel 3.19+
-* golang 1.7+
+* golang 1.8+
 * grpc
 
 Popular distros, such as Debian or Fedora, will likely already contain
 Linux kernel 4.0 or higher. Most or all of the above requirements are
-probably going to satisfied given the modern nature of golang, which will
-simply download the referenced repo as needed.
+probably going to satisfied given the popularity of docker and the ease of
+obtaining dependencies via go get.
 
 In the event that this program does not appear to work on a particular
 non-mainstream distro. Feel free to contact me if you need assistance
@@ -31,9 +34,9 @@ and I will make note of it in future versions of this readme.
 
 # Installation
 
-You can obtain the codebase via:
+You can obtain the codebase via git:
 
-go get github.com/rbisewski/lclusterd
+git clone https://github.com/rbisewski/lclusterd
 
 Afterwards you can build both the server binary (lclusterd) and the client
 binary (lclusterc) as follows:
@@ -51,9 +54,24 @@ make target, so manual regeneration is not required.
 
 # Basic Usage Instructions
 
+Etcd is required for holding the key value stores, you can run it as
+follows:
+
+etcd --data-dir /tmp/etcd
+
+
+This program uses runc and as a result needs a rootfs to work. The fastest
+way would be to export a docker image to /tmp/ and pass along the final
+location to the lclusterd server. 
+
+mkdir /tmp/rootfs
+
+sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
+
+
 To start the server daemon:
 
-lclusterd [--namespace=name] [--rootfs=/path/to/dir]
+sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
 
 This program will default to localhost, however, you can also specify the
 network namespace using the --namespace argument flag noted above.
@@ -82,6 +100,14 @@ To remove a job from the server, use the removejob argument:
 lclusterc --removejob=uuid
 
 Where uuid is the assigned number of the job in question.
+
+
+# TODOs
+
+* merge in node_manger (only partly works)
+* merge in tests (only partly works)
+* get removeJob to work again
+* implement checkJobStatus on the client side
 
 
 # Authors

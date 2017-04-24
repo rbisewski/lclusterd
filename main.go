@@ -6,9 +6,7 @@
 
 package main
 
-import (
-    "flag"
-)
+import "flag"
 
 //
 // Globals
@@ -21,7 +19,7 @@ var namespace string
 var etcdServer *EtcdInstance
 
 // Node Manager
-var nodeManager *NodeManager
+//var nodeManager *NodeManager
 
 // Scheduler
 var scheduler *Scheduler
@@ -30,7 +28,7 @@ var scheduler *Scheduler
 var rootfs string
 
 // Incremental Node number
-var incrementalNodeNumber int64 = 0
+//var incrementalNodeNumber int64 = 0
 
 // Initialize the flags beforehand.
 func init() {
@@ -98,6 +96,12 @@ func main() {
     // Print out some informative information about how the rootfs dir.
     stdlog("Rootfs Location: " + rootfs)
 
+    // Go ahead and start the Scheduler.
+    scheduler = &Scheduler{}
+
+    // Mention that the global scheduler has now started.
+    stdlog("Scheduler startup on " + getHostname())
+
     // Go ahead and start the etcd server instance.
     etcd_server_inst, err := CreateEtcdInstance(etcdSocket)
 
@@ -105,7 +109,10 @@ func main() {
     // the EtcdServer. If it fails to start, go ahead and terminate the
     // program.
     if err != nil {
+        stdlog(" ")
+        stdlog("The following error has occurred: ")
         stdlog(err.Error())
+        stdlog(" ")
         stdlog("Warning: Unable to start etcd server!")
         return
     }
@@ -113,29 +120,18 @@ func main() {
     // Escalate the etcd server instance to become the global etcd server.
     etcdServer = etcd_server_inst
 
-    // generate the rootfs dirs for the etcd key-values
-    err = etcdServer.generateRootfsDirs()
-
-    // safety check, ensure the dirs could actually be made properly
-    if err != nil {
-        stdlog(err.Error())
-        stdlog("Warning: Unable to assemble rootfs dirs!")
-        return
-    }
+    // Have the etcd server initialize the nodes
+    etcdServer.InitNode()
 
     // Mention that the etcd server has now started.
-    stdlog("Etcd server startup successful.")
-
-    // Go ahead and start the Scheduler.
-    queue       := make([]*Job, 0)
-    scheduler    = &Scheduler{Queue: queue}
+    stdlog("Etcd server startup on " + getHostname())
 
     // Go ahead and start the Node Manager.
-    nl          := make([]*Node,0)
-    nodeManager  = &NodeManager{Nodelist: nl}
+    //nl          := make([]*Node,0)
+    //nodeManager  = &NodeManager{Nodelist: nl}
 
     // Mention that the node manager has now started.
-    stdlog("Node manager startup successful.")
+    //stdlog("Node manager startup successful.")
 
     // In order to register all of the elements in the cluster, this grpc
     // server needs to exist to have something they can return back to.

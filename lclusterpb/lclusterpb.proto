@@ -8,78 +8,60 @@ syntax = "proto3";
 
 package lclusterpb;
 
-// RPC service definition
 service Lclusterd {
-    rpc StartJob  (StartJobRequest)  returns (StartJobResponse)  {}
-    rpc CheckJob  (CheckJobRequest)  returns (CheckJobResponse)  {}
-    rpc ListJobs  (ListJobsRequest)  returns (ListJobsResponse)  {}
-    rpc StopJob   (StopJobRequest)   returns (StopJobResponse)   {}
+    rpc StartJob (StartJobRequest) returns (StartJobResponse) {} 
+    rpc StopJob (StopJobRequest) returns (StopJobResponse) {}
 }
 
-// Start Job Request definition
+//
+// StartJobRequest definition
+//
 message StartJobRequest {
 
-    // String representation of a POSIX command.
-    string command = 1;
+    // Description
+    string description   = 1;
+
+    // Shell, binary, and env
+    string path          = 2;
+    repeated string args = 3;
+    repeated string env  = 4;
+
+    // Hostname
+    string hostname      = 5;
+
+    // Process id, assigned as per Lclusterd
+    int64 pid            = 6;
 }
 
-// Start Job *Response* definition
+//
+// StartJobResponse definition
+//
 message StartJobResponse {
 
-    // Process id of the job
-    string uuid = 1;
+    // Process id, can be -1 if an error occurs
+    int64 pid    = 1;
 
-    // Error string
+    // Error message as a string, if any
     string error = 2;
 }
 
-// Check Job Request definition
-message CheckJobRequest {
-
-    // Uuid of the job
-    string uuid = 1;
-}
-
-// Check Job *Response* definition
-message CheckJobResponse {
-
-    // Whether or not the job is currently active
-    uint32 result = 1;
-
-    // Error string
-    string error = 2;
-}
-
-// List Job Request definition
-message ListJobsRequest {
-
-    // Error string
-    string error = 1;
-}
-
-// Check Job *Response* definition
-message ListJobsResponse {
-
-    // Queue array
-    string qcontents = 1;
-
-    // Error string
-    string error = 2;
-}
-
-// Stop Job Request definition
+//
+// StopJobRequest definition
+//
 message StopJobRequest {
 
-    // Uuid of the job to be stopped
-    string uuid = 1;
+    // Process id of the job intending to stop
+    int64 pid = 1;
 }
 
-// Stop Job *Response* definition
+//
+// StopJobResponse definition
+//
 message StopJobResponse {
 
-    // Result boolean, whether or this was able to successfully stop a job.
-    bool result = 1;
+    // Response code; 0 is success, -1 is failure
+    int64 rc = 1;
 
-    // Error string, if any.
+    // Error message as a string, if any
     string error = 2;
-}
+}  

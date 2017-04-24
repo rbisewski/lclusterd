@@ -7,16 +7,19 @@
 package main
 
 // According to the etcd documentation, the clients listen on 2379
-const etcdSocket      = "localhost:2379"
+const etcdSocket       = "localhost:2379"
 
 // IPv4 address of the gRPC server
-const grpcServerAddr  = "localhost"
+const grpcServerAddr   = "localhost"
 
 // High number port for use by the gRPC server
-const grpcPort        = ":64051"
+const grpcPort         = ":64051"
 
 // Etcd grace period, in seconds
-const etcdGracePeriod = 5
+const etcdGracePeriod  = 5
+
+// Prefered Command Shell 
+const sh               = "/bin/bash"
 
 // Variables needed by etcd to store values.
 const nodes_dir        = "/nodes"
@@ -24,14 +27,6 @@ const jobs_dir         = "/jobs"
 const queue_dir        = "/queue"
 const failed_nodes_dir = "/failed_nodes"
 const warned_jobs_dir  = "/warned_jobs"
-
-//
-// Process state defines
-//
-const STOPPED = 0
-const RUNNING = 1
-const ABORTED = 2
-const ERROR   = 3
 
 /* --------------------------------------------------
  * Capabilities the libcontainer instances will need:

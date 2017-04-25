@@ -7,8 +7,7 @@ instances.
 Consider reading the *Basic Usage Instructions* at a minimum to get the hang
 of using this job scheduler.
 
-NOTE: this is *very* much a work in progress, and it does not currently
-function.
+Note that while this is a work in progress, it does somewhat partially work.
 
 # Requirements
 
@@ -36,17 +35,17 @@ and I will make note of it in future versions of this readme.
 
 You can obtain the codebase via git:
 
-git clone https://github.com/rbisewski/lclusterd
+    git clone https://github.com/rbisewski/lclusterd
 
 Afterwards you can build both the server binary (lclusterd) and the client
 binary (lclusterc) as follows:
 
-make
+    make
 
 If you need to make changes to the PB prototype file, you can also run the
 following command:
 
-make regen_proto
+    make regen_proto
 
 Note that prototypes are regenerated before every build using the standard
 make target, so manual regeneration is not required.
@@ -57,21 +56,21 @@ make target, so manual regeneration is not required.
 Etcd is required for holding the key value stores, you can run it as
 follows:
 
-etcd --data-dir /tmp/etcd
+    etcd --data-dir /tmp/etcd
 
 
 This program uses runc and as a result needs a rootfs to work. The fastest
 way would be to export a docker image to /tmp/ and pass along the final
 location to the lclusterd server. 
 
-mkdir /tmp/rootfs
+    mkdir /tmp/rootfs
 
-sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
+    sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
 
 
 To start the server daemon:
 
-sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
+    sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
 
 This program will default to localhost, however, you can also specify the
 network namespace using the --namespace argument flag noted above.
@@ -82,7 +81,7 @@ location as well, which can be any safe POSIX location.
 
 To add a job to the server, you can use the addjob argument like so:
 
-lclusterc --addjob='bash command'
+    lclusterc --addjob='bash command'
 
 Where 'bash command' is the terminal command to be executed.
 
@@ -90,14 +89,14 @@ Where 'bash command' is the terminal command to be executed.
 To check on the current status of a job on the server, you can use the
 checkjob flag as such:
 
-lclusterc --checkjob=uuid
+    lclusterc --checkjob=uuid
 
 Where uuid is the assigned number of the job in question.
 
 
 To remove a job from the server, use the removejob argument:
 
-lclusterc --removejob=uuid
+    lclusterc --removejob=uuid
 
 Where uuid is the assigned number of the job in question.
 
@@ -109,6 +108,7 @@ Where uuid is the assigned number of the job in question.
 * implement checkJobStatus on the client side
 * handling failed nodes
 * watching warned jobs
+* get nodes to send console output data back to server
 
 
 # Authors

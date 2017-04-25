@@ -18,17 +18,14 @@ var namespace string
 // Etcd Server
 var etcdServer *EtcdInstance
 
-// Node Manager
-//var nodeManager *NodeManager
-
 // Scheduler
 var scheduler *Scheduler
 
+// List of current processes
+var processesList map[int64]*Process
+
 // Rootfs Location
 var rootfs string
-
-// Incremental Node number
-//var incrementalNodeNumber int64 = 0
 
 // Initialize the flags beforehand.
 func init() {
@@ -120,18 +117,15 @@ func main() {
     // Escalate the etcd server instance to become the global etcd server.
     etcdServer = etcd_server_inst
 
-    // Have the etcd server initialize the nodes
-    etcdServer.InitNode()
-
     // Mention that the etcd server has now started.
     stdlog("Etcd server startup on " + getHostname())
 
-    // Go ahead and start the Node Manager.
-    //nl          := make([]*Node,0)
-    //nodeManager  = &NodeManager{Nodelist: nl}
+    // Have the etcd server initialize the nodes, with a "primed" node that
+    // functions as a sort of "manager" for the other nodes
+    etcdServer.InitNode()
 
     // Mention that the node manager has now started.
-    //stdlog("Node manager startup successful.")
+    stdlog("Node manager startup successful.")
 
     // In order to register all of the elements in the cluster, this grpc
     // server needs to exist to have something they can return back to.

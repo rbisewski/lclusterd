@@ -16,17 +16,25 @@ const grpcServerAddr   = "localhost"
 const grpcPort         = ":64051"
 
 // Etcd grace period, in seconds
-const etcdGracePeriod  = 5
+const etcdGracePeriod  = 3
 
 // Prefered Command Shell 
 const sh               = "/bin/bash"
 
 // Variables needed by etcd to store values.
 const nodes_dir        = "/nodes"
+const processes_dir    = "/processes"
 const jobs_dir         = "/jobs"
 const queue_dir        = "/queue"
 const failed_nodes_dir = "/failed_nodes"
 const warned_jobs_dir  = "/warned_jobs"
+
+// Location to hold which node is currently ready, aka 'primed'
+const primed           = "/primed"
+
+// TTL lock values, in seconds
+const primedTTL        = 4
+const nlistTTL         = 4
 
 /* --------------------------------------------------
  * Capabilities the libcontainer instances will need:

@@ -80,7 +80,7 @@ func scheduleJob(srv *EtcdInstance, j *Job) error {
     }
 
     // grab the first available node
-    node, err = srv.GetNode(node.HostID)
+    node, err = srv.getNode(node.HostID)
 
     // if an error occurs, go ahead and pass it back
     if err != nil {

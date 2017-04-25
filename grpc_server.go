@@ -34,6 +34,7 @@ func startServerInstanceOfGRPC() {
 
     // Safety check, make sure an error didn't occur.
     if err != nil {
+        printf(err.Error())
         panic("Error: Unable to start gRPC server on the requested port!")
     }
 

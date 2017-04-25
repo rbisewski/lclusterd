@@ -50,16 +50,14 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
     // Safety check, ensure the above config is not nil.
     if err != nil {
         return nil, errorf("CreateEtcdInstance() --> improperly " +
-                               "generated client due to...\n" +
-                               err.Error())
+                           "generated client due to...\n" +
+                           err.Error())
     }
 
     // define the node
     node := &Node{
         HostName: getHostname(),
         HostID:   getHostname(),
-        CPUPercentRoom: 100 - hostCPURoomReserve,
-        MemoryMBRoom:   0,
     }
 
     // Create an etcdInstance using the new internal client

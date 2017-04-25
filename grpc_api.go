@@ -27,7 +27,7 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
 
     // Cast the job request into a Job, then attempt to add it to the
     // queue.
-    pid, err := etcdServer.addToGeneralQueue((*Job)(r))
+    pid, err := etcdServer.addToGlobalQueue((*Job)(r))
 
     // if any errors occur...
     if err != nil {
@@ -60,7 +60,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
     response := &pb.StopJobResponse{}
 
     // request that the etcd server hand back the process
-    process, err := etcdServer.GetProc(request.Pid)
+    process, err := etcdServer.obtainProcess(request.Pid)
 
     // if any error occurred, pass it back
     if err != nil {

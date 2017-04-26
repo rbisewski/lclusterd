@@ -6,8 +6,19 @@
 
 package main
 
-// According to the etcd documentation, the clients listen on 2379
-const etcdSocket       = "localhost:2379"
+// location of the etcd binary, as a POSIX dir path
+const etcdBinaryPath   = "/usr/bin/etcd"
+
+// Storage location of the etcd server data dir; in the function
+// "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
+// timestamp is appended to the end of this path so as to keep each server
+// separate.
+const etcdDataDir      = "/tmp/etcd_"
+
+// According to the etcd documentation, the clients listen on 2379, while
+// servers listen on 2380.
+const etcdClientPort   = ":2379"
+const etcdServerPort   = ":2380"
 
 // IPv4 address of the gRPC server
 const grpcServerAddr   = "localhost"

@@ -8,6 +8,7 @@ package main
 
 import (
     "time"
+    "os/exec"
     clientv3 "github.com/coreos/etcd/clientv3"
 )
 
@@ -19,6 +20,66 @@ type EtcdInstance struct {
 
     // Pointer to nodes
     node *Node
+}
+
+//! Function to start etcd in the background
+/*
+ * @return   bool      whether or not this succeeded
+ */
+func StartEtcdServerBackgroundProcess() bool {
+
+    // input validation, ensure that the global network namespace value
+    // gets set to something safe; note that this value is set in the main
+    // routine of main.go
+    if len(namespace) < 1 {
+        printf("Error: Improper network namespace length!")
+        return false
+    }
+
+    // current protocol being used
+    protocol := "http://"
+
+    // Assemble a command based on the client / server ports and given
+    // global etcd server address.
+    //
+    // Note: this appends a 32 digit number to etcd data dir ensure the
+    // given etcd session is unique
+    initial_advertise_peer_urls := protocol + namespace + etcdServerPort
+    listen_peer_urls            := protocol + namespace + etcdServerPort
+    listen_client_urls          := protocol + namespace + etcdClientPort
+    advertise_client_urls       := protocol + namespace + etcdClientPort
+    data_dir_w_unique_cryptonum := etcdDataDir + spawnPseudorandomString(32)
+
+    // create a string array to hold all of the necessary arguments
+    var etcdArgs = []string{
+        "--name",
+        namespace,
+        "--initial-advertise-peer-urls",
+        initial_advertise_peer_urls,
+        "--listen-peer-urls",
+        listen_peer_urls,
+        "--listen-client-urls",
+        listen_client_urls,
+        "--advertise-client-urls",
+        advertise_client_urls,
+        "--data-dir",
+        data_dir_w_unique_cryptonum,
+    }
+
+    // attempt to exec the command
+    err := exec.Command(etcdBinaryPath, etcdArgs...).Start()
+
+    // if an error occurred, print it out and pass back a false
+    if err != nil {
+        printf(err.Error())
+        printf("Error: Unable to start background etcd service!")
+        return false
+    }
+
+    // otherwise if everything turned out fine, pass back a true
+    printf(" ")
+    stdlog("Background etcd service started successfully.")
+    return true
 }
 
 //! Creates a new EtcdInstance and returns a pointer to it
@@ -40,9 +101,9 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
     // Make a client configuration for use with generating the etcd client
     // instance later on...
     etcdClientConfiguration := clientv3.Config{
-                                              Endpoints: []string{etcdSocket},
-		                              DialTimeout: 5 * time.Second,
-                                            }
+                         Endpoints: []string{namespace+etcdClientPort},
+		         DialTimeout: 5 * time.Second,
+                        }
 
     // Use the above configuration to set the new client.
     newlyGeneratedClient, err := clientv3.New(etcdClientConfiguration)

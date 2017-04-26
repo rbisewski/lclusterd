@@ -13,6 +13,10 @@ import "flag"
 //
 
 // Network Namespace
+//
+// TODO: right now this program treats `namespace` as a hostname or IPv4
+// address, rather than an actual network namespace; this ought to be fixed
+//
 var namespace string
 
 // Etcd Server
@@ -75,13 +79,26 @@ func main() {
         return
     }
 
+    // attempt to start the etcd server in the background so that the
+    // instances are able to store and obtain key-values.
+    etcdBgSuccessfullyStarted := StartEtcdServerBackgroundProcess()
+
+    // safety check, ensure that the background etcd service has actually
+    // started
+    if !etcdBgSuccessfullyStarted {
+        printf("The background etcd service could not be started!")
+        printf("Ensure that some other instance of the service is not " +
+               "already running and in use by another process")
+        return
+    }
+
     // Having confirmed that the namespace and rootfs location exists,
     // background a checker loop to determine if a signal flag to terminate
     // the program is ever raised.
     go loopUtilSIGINT()
 
     // Give end-user a message stating that the lclusterd server started
-    printf("\n")
+    stdlog(" ")
     stdlog("-----------------------------")
     stdlog(" lcluster Server has started ")
     stdlog("-----------------------------")
@@ -100,7 +117,7 @@ func main() {
     stdlog("Scheduler startup on " + getHostname())
 
     // Go ahead and start the etcd server instance.
-    etcd_server_inst, err := CreateEtcdInstance(etcdSocket)
+    etcd_server_inst, err := CreateEtcdInstance(namespace+etcdClientPort)
 
     // Safety check, ensure that no errors have occurred during startup of
     // the EtcdServer. If it fails to start, go ahead and terminate the

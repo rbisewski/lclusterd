@@ -549,7 +549,8 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 
             // otherwise the job started successful, so go ahead and print
             // out a helpful message
-            stdlog("New job started (" + j.Path + ") on " + inst.node.HostID)
+            stdlog("New job started (" + j.Path + ") in a node on cluster " +
+                   "host " + inst.node.HostID)
         }
     }
 }

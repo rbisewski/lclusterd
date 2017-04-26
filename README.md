@@ -1,5 +1,7 @@
 # lclusterd - a lite clustered job scheduler for Linux
 
+NOTE: this is the code review branch
+
 lcluster is a lightweight Linux job scheduler designed to create clustered
 nodes for the purposes of running small jobs in isolated libcontainer
 instances.

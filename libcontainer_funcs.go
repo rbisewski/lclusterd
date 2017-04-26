@@ -26,14 +26,17 @@ func generateLibcontainerConfig(container_name string,
 
     // Assemble the new config
     new_config := &configs.Config{
+
         Rootfs: rootfs,
-                Capabilities: &configs.Capabilities {
-                    Bounding: lclusterc_caps,
-                    Permitted: lclusterc_caps,
-                    Inheritable: lclusterc_caps,
-                    Ambient: lclusterc_caps,
-                    Effective: lclusterc_caps,
-                },
+
+        Capabilities: &configs.Capabilities {
+            Bounding: lclusterc_caps,
+            Permitted: lclusterc_caps,
+            Inheritable: lclusterc_caps,
+            Ambient: lclusterc_caps,
+            Effective: lclusterc_caps,
+        },
+
         Namespaces: configs.Namespaces([]configs.Namespace{
             {Type: configs.NEWNS},
             {Type: configs.NEWUTS},
@@ -41,6 +44,7 @@ func generateLibcontainerConfig(container_name string,
             {Type: configs.NEWPID},
             {Type: configs.NEWNET},
         }),
+
         Cgroups: &configs.Cgroup{
             Name:   container_name,
             Parent: "system",
@@ -49,14 +53,19 @@ func generateLibcontainerConfig(container_name string,
                 AllowedDevices:   configs.DefaultAllowedDevices,
             },
         },
+
         MaskPaths: []string{
             "/proc/kcore",
         },
+
         ReadonlyPaths: []string{
             "/proc/sys", "/proc/sysrq-trigger", "/proc/irq", "/proc/bus",
         },
+
         Devices:  configs.DefaultAutoCreatedDevices,
+
         Hostname: hostname,
+
         Mounts: []*configs.Mount{
             {
                 Source:      "proc",
@@ -98,6 +107,7 @@ func generateLibcontainerConfig(container_name string,
                 Flags:       defaultMountFlags | syscall.MS_RDONLY,
             },
         },
+
         Networks: []*configs.Network{
             {
                 Type:    "loopback",
@@ -105,6 +115,7 @@ func generateLibcontainerConfig(container_name string,
                 Gateway: "localhost",
             },
         },
+
         Rlimits: []configs.Rlimit{
             {
                 Type: syscall.RLIMIT_NOFILE,

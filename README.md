@@ -104,8 +104,6 @@ Where uuid is the assigned number of the job in question.
 # TODOs
 
 * merge in tests (only partly works)
-* get removeJob to work again
-* implement checkJobStatus on the client side
 * handling failed nodes
 * watching warned jobs
 * get nodes to send console output data back to server

@@ -129,11 +129,12 @@ func StopProcess(p *Process) error {
 
     // input validation
     if p == nil {
-        return errorf("StopProcess() --> invalid input")
+        return errorf("StopProcess() --> invalid input\n")
     }
 
     // safety check, ensure this is actually a process
     if p.proc == nil {
+        debugf("StopProcess() --> no such process, ignoring")
         return nil
     }
 

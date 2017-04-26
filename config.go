@@ -6,6 +6,9 @@
 
 package main
 
+// if this is enabled, print debug messages
+const debugMode        = true
+
 // location of the etcd binary, as a POSIX dir path
 const etcdBinaryPath   = "/usr/bin/etcd"
 

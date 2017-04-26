@@ -17,6 +17,9 @@ import "flag"
 // TODO: right now this program treats `namespace` as a hostname or IPv4
 // address, rather than an actual network namespace; this ought to be fixed
 //
+// TODO: this has odd issues with non-localhost values, something to
+// consider for future versions
+//
 var namespace string
 
 // Etcd Server

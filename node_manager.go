@@ -616,12 +616,12 @@ func (inst *EtcdInstance) addToGlobalQueue(j *Job) (int64, error) {
 
     // input validation
     if j == nil {
-        return 0, errorf("addToGlobalQueue() --> invalid input")
+        return -1, errorf("addToGlobalQueue() --> invalid input")
     }
 
     // further check, ensure the instance is safe
     if inst.internal == nil {
-        return 0, errorf("addToGlobalQueue() --> malformed etcd instance")
+        return -1, errorf("addToGlobalQueue() --> malformed etcd instance")
     }
 
     // grab the current context
@@ -629,37 +629,52 @@ func (inst *EtcdInstance) addToGlobalQueue(j *Job) (int64, error) {
       etcdGracePeriod*time.Second)
 
     // grab the list of queued jobs
-    response, err := inst.internal.Get(ctx, jobs_dir)
+    response, err := inst.internal.Get(ctx, queue_dir)
+
+    // if debug mode...
+    if debugMode {
+
+        // cycle thru all of the current jobs for the benefit of the developer
+        debugf("Current queued jobs are as follows:")
+        for i, ent := range response.Kvs {
+            debugf(strconv.Itoa(i+1) + ") " + string(ent.Value))
+        }
+    }
 
     // cancel the context as it is no longer needed
     cancel()
 
+    // if an error occurs, pass it back; note that if an error occurs at
+    // this point it is likely a connection issue exists, hence the need to
+    // check for a proper contextual response
+    if err != nil {
+        stdlog(err.Error())
+        return -1, err
+    }
+
+    // use the nanosecond timestamp as an Uuid
+    //
+    // TODO: change this to something better
+    //
+    nextUuid      := time.Now().UnixNano()
+    nextUuidAsStr := strconv.FormatInt(nextUuid, 10)
+
     // if an error occurs, pass it back
     if err != nil {
         stdlog(err.Error())
-        return 0, err
-    }
-
-    // use the response to assemble a uuid the potential queued job
-    nextUuid := string(response.Kvs[0].Value)
-
-    // parse it to an int64
-    nextUuidAsInt, err := strconv.ParseInt(nextUuid, 10, 64)
-
-    // if an error occurs, pass it back
-    if err != nil {
-        return 0, err
+        return -1, err
     }
 
     // set the job process id to the recovered value
-    j.Pid = nextUuidAsInt
+    j.Pid = nextUuid
 
     // attempt to marshal the job
     mresult, err := json.Marshal(j)
 
     // if an error occurs, pass it back
     if err != nil {
-        return 0, err
+        stdlog(err.Error())
+        return -1, err
     }
 
     // Add task to the general queue
@@ -667,19 +682,41 @@ func (inst *EtcdInstance) addToGlobalQueue(j *Job) (int64, error) {
       etcdGracePeriod*time.Second)
 
     // attempt to insert it into etcd
-    _, err = inst.internal.Put(ctx, path.Join(queue_dir, nextUuid),
-      string(mresult))
+    _, err = inst.internal.Put(ctx, path.Join(queue_dir,
+      nextUuidAsStr), string(mresult))
+
+    // if debug mode...
+    if debugMode {
+
+        // grab the newly inserted job entry
+        debug_resp, err := inst.internal.Get(ctx, path.Join(queue_dir,
+          nextUuidAsStr))
+
+        // if an error occurs, this failed to insert the new job
+        if err != nil {
+            cancel()
+            stdlog(err.Error())
+            return -1, err
+        }
+
+        // cycle thru all of the current jobs
+        debugf("The newly queued job was as follows:")
+        for _, ent := range debug_resp.Kvs {
+            debugf(string(ent.Value))
+        }
+    }
 
     // cancel the current context as it is no longer needed
     cancel()
 
     // if an error occurred, pass it back
     if err != nil {
-        return 0, err
+        stdlog(err.Error())
+        return -1, err
     }
 
     // if all was successful, go ahead and pass back the id
-    return nextUuidAsInt, nil
+    return nextUuid, nil
 }
 
 //! Hand the job off to the job list of a node

@@ -72,6 +72,31 @@ func stdlog(ascii string) {
     printf("[" + currentTime + "] " + ascii)
 }
 
+//! Function to print out debug messages
+/*
+ * @param     string    ASCII to dump to stdout
+ *
+ * @return    none
+ */
+func debugf(ascii string) {
+
+    // Input validation
+    if len(ascii) < 1 {
+        return
+    }
+
+    // ensure debug mode is actually on
+    if !debugMode {
+        return
+    }
+
+    // Grab the current time in seconds from epoch.
+    currentTime := time.Now().String()
+
+    // Append the timestamp to the string message.
+    printf("[" + currentTime + "] DEBUG - " + ascii)
+}
+
 //! Determine if a given directory location actually exists.
 /*
  * @param     string    location of the form: /path/to/directory/
@@ -137,7 +162,7 @@ func loopUtilSIGINT() {
     os.Exit(0)
 }
 
-//! Spawns a pseudo-random string based on the Unix timestamp
+//! Spawns a pseudo-random string based on /dev/random
 /*
  * @param    int       number of bytes
  *

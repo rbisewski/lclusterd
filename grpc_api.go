@@ -7,6 +7,7 @@
 package main
 
 import (
+    "strconv"
     pb "./lclusterpb"
     "golang.org/x/net/context"
 )
@@ -30,7 +31,7 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
     pid, err := etcdServer.addToGlobalQueue((*Job)(r))
 
     // if any errors occur...
-    if err != nil {
+    if err != nil || pid < 0 {
 
         // set the pid to -1 and grab the error as a string
         response.Pid = -1
@@ -43,6 +44,21 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
     // otherwise use the given pid and pass it back
     response.Pid = pid
     return response, nil
+}
+
+//! API function to check a job
+/*
+ * @param     Context            given host context
+ * @param     StartJobRequest    object to hold the start job request
+ *
+ * @return    StartJobResponse   the server's response to the remote call
+ * @return    error              error message, if any
+ */
+func (s *LclusterdServer) CheckJob(ctx context.Context,
+  r *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
+
+      // TODO: just a stub until this can be merged in
+      return &pb.CheckJobResponse{Rc: 0}, nil
 }
 
 //! API function to stop a job
@@ -68,6 +84,14 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
         response.Rc = -1
         response.Error = err.Error()
         return response, err
+    }
+
+    // safety check, ensure this actually got a process
+    if process == nil || process.proc == nil {
+        stdlog("No such process exists with Uuid: " +
+               strconv.FormatInt(request.Pid, 10))
+        response.Rc = 1
+        return response, nil
     }
 
     // attempt to stop the given process

@@ -10,6 +10,7 @@ package lclusterpb;
 
 service Lclusterd {
     rpc StartJob (StartJobRequest) returns (StartJobResponse) {} 
+    rpc CheckJob (CheckJobRequest) returns (CheckJobResponse) {}
     rpc StopJob (StopJobRequest) returns (StopJobResponse) {}
 }
 
@@ -46,6 +47,34 @@ message StartJobResponse {
 }
 
 //
+// CheckJobRequest definition
+//
+message CheckJobRequest {
+
+    // Process id of the job intending to check
+    int64 pid = 1;
+}
+
+//
+// CheckJobResponse definition
+//
+message CheckJobResponse {
+
+    // Response code, as int64
+    //
+    // -1 --> failure, due to corrupted server or input
+    //  0 --> unknown job status
+    //  1 --> process does not exist
+    //  2 --> process is queued
+    //  3 --> process is active on a node
+    //
+    int64 rc = 1;
+
+    // Error message as a string, if any
+    string error = 2;
+}
+
+//
 // StopJobRequest definition
 //
 message StopJobRequest {
@@ -59,9 +88,14 @@ message StopJobRequest {
 //
 message StopJobResponse {
 
-    // Response code; 0 is success, -1 is failure
+    // Response code, as int64
+    //
+    // -1 --> failure, due to corrupted server or input
+    //  0 --> success
+    //  1 --> process does not exist
+    //
     int64 rc = 1;
 
     // Error message as a string, if any
     string error = 2;
-}  
+}

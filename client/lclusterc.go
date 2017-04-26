@@ -21,7 +21,7 @@ import (
 // Variables to hold the result of argument flags.
 var addjob string
 var checkjob string
-var removejob int64
+var removejob string
 
 // Initialize the flags beforehand.
 func init() {
@@ -35,7 +35,7 @@ func init() {
       "Uuid of the job to query status.")
 
     // Argument flag for when the end-user wants to remove a job
-    flag.Int64Var(&removejob, "removejob", -1,
+    flag.StringVar(&removejob, "removejob", "",
       "Pid of the job to be removed.")
 }
 
@@ -90,9 +90,9 @@ func addJobToServer(cmd string) {
     cancel()
 
     // Safety check, ensure that no error has occurred.
-    if err != nil {
-        fmt.Printf("addJobToServer() --> the following error has occurred\n" +
-          err.Error())
+    if err != nil || response.GetPid() < 0 {
+        fmt.Printf("\nError: Unable to add job to queue!\n")
+        fmt.Printf(err.Error() + "\n")
         return
     }
 
@@ -100,63 +100,6 @@ func addJobToServer(cmd string) {
     // telling the end-user the uuid of the new job.
     fmt.Printf("The requested job has been added to queue, has pid of " +
       strconv.FormatInt(response.GetPid(), 10) + "\n")
-}
-
-//! Print out the list of jobs currently on the server.
-/*
- * @return   none
- *
- * SIDE EFFECT: prints out a list of jobs to the client's stdout
- */
-func listJobsOnServer() {
-    /*
-    // Dial a connection to the grpc server.
-    connection, err := grpc.Dial(grpcServerAddr + grpcPort,
-      grpc.WithInsecure())
-
-    // Safety check, ensure no errors have occurred.
-    if err != nil {
-        fmt.Printf("listJobsOnServer() --> unable to connect to grpc server at address")
-        return
-    }
-
-    // Defer the connection for the time being, but eventually it will be
-    // closed once we've finished with it.
-    defer connection.Close()
-
-    // Create an lcluster client
-    lcluster_client := pb.NewLclusterdClient(connection)
-
-    // Assemble a check job request object
-    request := &pb.ListJobsRequest{}
-
-    // Grab the current background context.
-    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
-    // Using the check job request defined above, go ahead and attempt to
-    // stop the job
-    response, err := lcluster_client.ListJobs(ctx, request)
-
-    // Cancel the current context since this has either generated a
-    // response or an error.
-    cancel()
-
-    // Safety check, ensure that no error has occurred.
-    if err != nil {
-        fmt.Printf("listJobsOnServer() --> the following error has " +
-                   "occurred\n" + err.Error())
-    }
-
-    // the response queue is empty, print out a short message stating this
-    if len(response.Qcontents) < 1 {
-        fmt.Printf("The queue is currently empty.\n")
-        return
-    }
-
-    // print out a list of jobs currently in the queue
-    fmt.Printf("The following jobs are queued.\n")
-    fmt.Printf(response.Qcontents)
-    */
 }
 
 //! Status of a job from the server.
@@ -172,14 +115,25 @@ func checkJobOnServer(uuid string) {
         fmt.Printf("checkJobOnServer() --> invalid input")
         return
     }
-/*
+
+    // attempt to cast the pid into an int since that is CheckJobRequest
+    // uses as the Pid var type
+    pid, err := strconv.ParseInt(uuid, 10, 64)
+
+    // if an error occurs, print it out
+    if err != nil || pid < 1 {
+        fmt.Printf("Please enter a valid int64 value.\n")
+        return
+    }
+
     // Dial a connection to the grpc server.
     connection, err := grpc.Dial(grpcServerAddr + grpcPort,
       grpc.WithInsecure())
 
     // Safety check, ensure no errors have occurred.
     if err != nil {
-        fmt.Printf("checkJobOnServer() --> unable to connect to grpc server at address")
+        fmt.Printf("checkJobOnServer() --> unable to connect to grpc " +
+                   "server at address")
         return
     }
 
@@ -191,7 +145,7 @@ func checkJobOnServer(uuid string) {
     lcluster_client := pb.NewLclusterdClient(connection)
 
     // Assemble a check job request object
-    request := &pb.CheckJobRequest{ Uuid: uuid }
+    request := &pb.CheckJobRequest{ Pid: pid }
 
     // Grab the current background context.
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -210,23 +164,27 @@ func checkJobOnServer(uuid string) {
                    "occurred\n" + err.Error())
     }
 
+    // If an internal server-side error has occurred...
+    if response.Rc == -1 {
+        fmt.Printf("An internal server-side error has occurred.\n")
+
     // Unknown job state
-    if response.Result == 0 {
-        fmt.Printf("An unknown server-side error has occurred.")
+    } else if response.Rc == 0 {
+        fmt.Printf("The job '" + uuid + "' appears to have an unknown " +
+                   "status.\nConsider contacting the server operator.\n")
 
     // Job does not exist
-    } else if response.Result == 1 {
-        fmt.Printf("The job '" + uuid + "' is not present.")
+    } else if response.Rc == 1 {
+        fmt.Printf("The job '" + uuid + "' is not present.\n")
 
     // Job is queued
-    } else if response.Result == 2 {
-        fmt.Printf("The job '" + uuid + "' is queued.")
+    } else if response.Rc == 2 {
+        fmt.Printf("The job '" + uuid + "' is queued.\n")
 
     // Job is currently running
-    } else if response.Result == 3 {
-        fmt.Printf("The job '" + uuid + "' is currently active.")
+    } else if response.Rc == 3 {
+        fmt.Printf("The job '" + uuid + "' is currently active.\n")
     }
-    */
 }
 
 //! Remove a job from the server.
@@ -235,11 +193,21 @@ func checkJobOnServer(uuid string) {
  *
  * @return   none
  */
-func removeJobFromServer(pid int64) {
+func removeJobFromServer(uuid string) {
 
     // Input validation
-    if pid < 1 {
+    if len(uuid) < 1 {
         fmt.Printf("removeJobFromServer() --> invalid input")
+        return
+    }
+
+    // attempt to cast the pid into an int since that is StopJobRequest
+    // uses as the Pid var type
+    pid, err := strconv.ParseInt(uuid, 10, 64)
+
+    // if an error occurs, print it out
+    if err != nil || pid < 1 {
+        fmt.Printf("Please enter a valid int64 value.\n")
         return
     }
 
@@ -285,9 +253,17 @@ func removeJobFromServer(pid int64) {
     // check the return code from the StopJobResponse object, if it -1 then
     // an error has occurred.
     if response.Rc == -1 {
-        fmt.Printf("removeJobFromServer() --> the following error has " +
-                   "occurred...\n")
-        fmt.Printf(response.Error)
+        fmt.Printf("Server has responded with the following error:\n")
+        fmt.Printf(response.Error + "\n")
+        return
+    }
+
+    // with a return code of `1` then the process could not be found, but
+    // the server otherwise experienced no error while processing the
+    // request
+    if response.Rc == 1 {
+        fmt.Printf("No such process exists with Uuid: " +
+               strconv.FormatInt(pid, 10) + "\n")
         return
     }
 
@@ -305,13 +281,6 @@ func main() {
     // Parse the given argument flags.
     flag.Parse()
 
-    // In order for the client to actually work, only one argument must
-    // be given; to add / check a job present on the server, etc.
-    if len(addjob) < 1 && len(checkjob) < 1 {
-        flag.Usage()
-        return
-    }
-
     // If the add job flag was passed...
     if len(addjob) > 0 {
         addJobToServer(addjob)
@@ -326,7 +295,7 @@ func main() {
 
     // Safety check, ensure that remove job was given a value of 1 or
     // higher.
-    if removejob > 0 {
+    if len(removejob) > 0 {
         removeJobFromServer(removejob)
         return
     }

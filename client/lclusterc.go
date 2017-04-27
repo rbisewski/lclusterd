@@ -167,24 +167,35 @@ func checkJobOnServer(uuid string) {
     // If an internal server-side error has occurred...
     if response.Rc == -1 {
         fmt.Printf("An internal server-side error has occurred.\n")
+        return
 
     // Unknown job state
     } else if response.Rc == 0 {
         fmt.Printf("The job '" + uuid + "' appears to have an unknown " +
                    "status.\nConsider contacting the server operator.\n")
+        return
 
     // Job does not exist
     } else if response.Rc == 1 {
         fmt.Printf("The job '" + uuid + "' is not present.\n")
+        return
 
     // Job is queued
     } else if response.Rc == 2 {
         fmt.Printf("The job '" + uuid + "' is queued.\n")
+        return
 
     // Job is currently running
     } else if response.Rc == 3 {
         fmt.Printf("The job '" + uuid + "' is currently active.\n")
+        return
     }
+
+    // otherwise if none of the above happened, print out a message
+    // stating this is unknown, with the response code
+    fmt.Printf("The following undefined response code was given back: " +
+      strconv.FormatInt(response.Rc,10) + "\n")
+    fmt.Printf("Consider contacting the server operator.\n")
 }
 
 //! Remove a job from the server.

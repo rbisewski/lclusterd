@@ -49,16 +49,63 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
 //! API function to check a job
 /*
  * @param     Context            given host context
- * @param     StartJobRequest    object to hold the start job request
+ * @param     CheckJobRequest    object to hold the check job request
  *
- * @return    StartJobResponse   the server's response to the remote call
+ * @return    CheckJobResponse   the server's response to the remote call
  * @return    error              error message, if any
  */
 func (s *LclusterdServer) CheckJob(ctx context.Context,
-  r *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
+  cjr *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
 
-      // TODO: just a stub until this can be merged in
-      return &pb.CheckJobResponse{Rc: 0}, nil
+      // input validation
+      if cjr == nil || cjr.Pid < 1 {
+          return &pb.CheckJobResponse{Rc: -1}, errorf("CheckJob() --> " +
+                 "invalid input")
+      }
+
+      // grab the list of queued jobs
+      response, err := etcdServer.internal.Get(ctx, queue_dir)
+
+      // if an error occurs here, pass back a return code of 0, since for
+      // whatever reason, the server is unable to query jobs at this time
+      if err != nil {
+          return &pb.CheckJobResponse{Rc: 0}, err
+      }
+
+      // cycle thru all of the currently queued jobs
+      for _, j := range response.Kvs {
+
+          // cast the job key to a string; it should be the uuid
+          j_uuid := string(j.Key)
+
+          // cast the CheckJobRequest pid to a string
+          cjr_uuid := strconv.FormatInt(cjr.Pid, 10)
+
+          // if a job exists with the given pid
+          if j_uuid == cjr_uuid {
+
+              // pass back a return code of 2, stating that the job is
+              // present and currently queued.
+              return &pb.CheckJobResponse{Rc: 2}, nil
+          }
+      }
+
+      // since the job was not scheduled, perhaps it is active, so go ahead
+      // and cycle thru all of the process refs
+      for _, p := range processesList {
+
+          // if a job exists with the given pid
+          if p.uuid == cjr.Pid {
+
+              // pass back a return code of 3, stating that the process is
+              // present and actively running on a node.
+              return &pb.CheckJobResponse{Rc: 3}, nil
+          }
+      }
+
+      // since this was unable to find the job on the server, assume the
+      // job does not exist
+      return &pb.CheckJobResponse{Rc: 1}, nil
 }
 
 //! API function to stop a job

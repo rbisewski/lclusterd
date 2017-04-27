@@ -14,9 +14,7 @@ import (
 	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 )
 
-//
-// Process definition
-//
+// The process definition.
 type Process struct {
 
 	// Id generated via lcluster
@@ -27,7 +25,7 @@ type Process struct {
 	proc      *libcontainer.Process
 }
 
-//! Function to initialize the libcontiner process handling
+//! Function to initialize the libcontiner process handling.
 /*
  * @return    none
  */
@@ -58,7 +56,7 @@ func init() {
 	}
 }
 
-//! Function to start a process, as per the global rootfs
+//! Function to start a process, as per the global rootfs.
 /*
  * @param    Job    given job
  *
@@ -67,7 +65,7 @@ func init() {
  */
 func StartProcess(j Job) (p *Process, err error) {
 
-	// spawn a containerizer
+	// Spawn a containerizer.
 	containerizer, err := libcontainer.New(rootfs, libcontainer.Cgroupfs)
 
 	// check if an error occurred
@@ -76,16 +74,16 @@ func StartProcess(j Job) (p *Process, err error) {
 		return nil, err
 	}
 
-	// make a crypto safe pseudo random string as the id
+	// Make a crypto safe pseudo random string as the id.
 	containerID := spawnPseudorandomString(16)
 
-	// set the location of the container
+	// Set the location of the container.
 	containerName := filepath.Base(j.Path) + "_" + containerID
 
-	// generate a new libcontainer config
+	// Generate a new libcontainer config.
 	config := generateLibcontainerConfig(containerName, j.Hostname)
 
-	// use the containerizer to make a container
+	// Use the containerizer to make a container.
 	container, err := containerizer.Create(containerID, config)
 
 	// check if any error occurred
@@ -94,7 +92,7 @@ func StartProcess(j Job) (p *Process, err error) {
 		return nil, err
 	}
 
-	// assemble a new process
+	// Assemble a new process.
 	process := &libcontainer.Process{
 		Args:   append([]string{j.Path}, j.Args...),
 		Env:    j.Env,
@@ -114,11 +112,11 @@ func StartProcess(j Job) (p *Process, err error) {
 		return nil, err
 	}
 
-	// assemble a reference to the newly generated process
+	// Assemble a reference to the newly generated process.
 	return &Process{uuid: j.Pid, container: container, proc: process}, nil
 }
 
-//! Function to stop a process, as per the global rootfs
+//! Function to stop a process, as per the global rootfs.
 /*
  * @param    Process    given process to stop
  *
@@ -137,7 +135,7 @@ func StopProcess(p *Process) error {
 		return nil
 	}
 
-	// have the OS send the kill signal to the process
+	// Have the OS send the kill signal to the process.
 	err := p.proc.Signal(os.Kill)
 
 	// safety check, ensure this didn't fail

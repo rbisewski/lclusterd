@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-//! Wrapper to make golang error funcs seem more C-like
+//! Wrapper to make golang error funcs seem more C-like.
 /*
  * @param     string    ASCII to dump to stdout
  *
@@ -35,7 +35,7 @@ func errorf(ascii string) error {
 	return fmt.Errorf(ascii)
 }
 
-//! Wrapper to make golang print funcs seem more C-like
+//! Wrapper to make golang print funcs seem more C-like.
 /*
  * @param     string    ASCII to dump to stdout
  *
@@ -52,7 +52,7 @@ func printf(ascii string) {
 	fmt.Printf(ascii + "\n")
 }
 
-//! Wrapper to give a log-like appearance to stdout
+//! Wrapper to give a log-like appearance to stdout.
 /*
  * @param     string    ASCII to dump to stdout
  *
@@ -122,13 +122,13 @@ func directoryExists(path string) bool {
 	return true
 }
 
-//! Function to grab the hostname at a given context
+//! Function to grab the hostname at a given context.
 /*
  * @return    string    hostname as a string
  */
 func getHostname() string {
 
-	// attempt to grab the hostname
+	// Attempt to grab the hostname from the OS.
 	hostname, err := os.Hostname()
 
 	// safety check, ensure no error occurred
@@ -146,7 +146,7 @@ func getHostname() string {
  */
 func loopUtilSIGINT() {
 
-	// Define a new variable for dealing with OS signals
+	// Define a new variable for dealing with OS signals.
 	checker := make(chan os.Signal, 1)
 
 	// Make it notify the end-user upon receiving a signal.
@@ -162,7 +162,7 @@ func loopUtilSIGINT() {
 	os.Exit(0)
 }
 
-//! Spawns a pseudo-random string based on /dev/random
+//! Spawns a pseudo-random string based on /dev/random.
 /*
  * @param    int       number of bytes
  *
@@ -175,11 +175,11 @@ func spawnPseudorandomString(num int) string {
 		return ""
 	}
 
-	// assign a chunk of memory for holding the bytes
+	// Assign a chunk of memory for holding the bytes.
 	byteArray := make([]byte, num)
 
-	// populate the byte array with cryptographically secure pseudo-random
-	// numbers, up to a max of `num` as per the param to this function
+	// Populate the byte array with cryptographically secure pseudo-random
+	// numbers, up to a max of `num` as per the param to this function.
 	_, err := rand.Read(byteArray)
 
 	// safety check, ensure no error occurred
@@ -188,7 +188,7 @@ func spawnPseudorandomString(num int) string {
 		return ""
 	}
 
-	// base64 encode the result
+	// Base64 encode the resulting pseudo-random bytes.
 	pseudoRandStr := base64.URLEncoding.EncodeToString(byteArray)
 
 	// safety check, ensure no error occurred

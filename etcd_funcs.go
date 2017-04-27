@@ -12,17 +12,17 @@ import (
 	"time"
 )
 
-// Etcd Instance Structure
+// Etcd instance structure, which holds a pointer to the client and nodes.
 type EtcdInstance struct {
 
-	// Internal pointer to the server itself
+	// Internal pointer to the server itself.
 	internal *clientv3.Client
 
-	// Pointer to nodes
+	// Pointer to nodes.
 	node *Node
 }
 
-//! Function to start etcd in the background
+//! Function to start etcd in the background.
 /*
  * @return   bool      whether or not this succeeded
  */
@@ -36,21 +36,21 @@ func StartEtcdServerBackgroundProcess() bool {
 		return false
 	}
 
-	// current protocol being used
+	// Current protocol being used.
 	protocol := "http://"
 
 	// Assemble a command based on the client / server ports and given
 	// global etcd server address.
 	//
 	// Note: this appends a 32 digit number to etcd data dir ensure the
-	// given etcd session is unique
+	// given etcd session is unique.
 	initial_advertise_peer_urls := protocol + namespace + etcdServerPort
 	listen_peer_urls := protocol + namespace + etcdServerPort
 	listen_client_urls := protocol + namespace + etcdClientPort
 	advertise_client_urls := protocol + namespace + etcdClientPort
 	data_dir_w_unique_cryptonum := etcdDataDir + spawnPseudorandomString(32)
 
-	// create a string array to hold all of the necessary arguments
+	// Create a string array to hold all of the necessary arguments.
 	var etcdArgs = []string{
 		"--name",
 		namespace,
@@ -66,7 +66,7 @@ func StartEtcdServerBackgroundProcess() bool {
 		data_dir_w_unique_cryptonum,
 	}
 
-	// attempt to exec the command
+	// Attempt to exec the command.
 	err := exec.Command(etcdBinaryPath, etcdArgs...).Start()
 
 	// if an error occurred, print it out and pass back a false
@@ -82,7 +82,7 @@ func StartEtcdServerBackgroundProcess() bool {
 	return true
 }
 
-//! Creates a new EtcdInstance and returns a pointer to it
+//! Creates a new EtcdInstance and returns a pointer to it.
 /*
  * @param   string          address to listen on; usually etcd likes to
  *                          listen on 2379; this can be adjusted in the
@@ -115,21 +115,22 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 			err.Error())
 	}
 
-	// assign the details of the new node as per...
+	// Assign the details of the new node as per...
 	//
 	// HostName: hostname of the server
 	// HostID:   n_XYZ
 	//
-	// where XYZ is just a random crypto num of base64 w/ roughly 16 digits
+	// where XYZ is just a random crypto num of base64 w/ roughly 16
+	// digits.
 	//
 	node := &Node{
 		HostName: getHostname(),
 		HostID:   "n_" + spawnPseudorandomString(16),
 	}
 
-	// Create an etcdInstance using the new internal client
+	// Create an etcdInstance using the new internal client.
 	inst = &EtcdInstance{internal: newlyGeneratedClient, node: node}
 
-	// Return the completed etcdInstance
+	// Return the completed etcdInstance.
 	return inst, nil
 }

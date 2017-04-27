@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-//! API function to start a job
+//! The gRPC API function to start a job.
 /*
  * @param     Context            given host context
  * @param     StartJobRequest    object to hold the start job request
@@ -23,7 +23,7 @@ import (
 func (s *LclusterdServer) StartJob(ctx context.Context,
 	r *pb.StartJobRequest) (*pb.StartJobResponse, error) {
 
-	// create a start job response husk for use later on...
+	// Create a start job response husk for use later on.
 	response := &pb.StartJobResponse{}
 
 	// Cast the job request into a Job, then attempt to add it to the
@@ -46,7 +46,7 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
 	return response, nil
 }
 
-//! API function to check a job
+//! The gRPC API function to check a job.
 /*
  * @param     Context            given host context
  * @param     CheckJobRequest    object to hold the check job request
@@ -63,7 +63,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 			"invalid input")
 	}
 
-	// grab the list of queued jobs
+	// Obtain the response, which contains the list of queued jobs.
 	response, err := etcdServer.internal.Get(ctx, queue_dir)
 
 	// if an error occurs here, pass back a return code of 0, since for
@@ -72,13 +72,13 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 		return &pb.CheckJobResponse{Rc: 0}, err
 	}
 
-	// cycle thru all of the currently queued jobs
+	// Cycle thru all of the currently queued jobs.
 	for _, job := range response.Kvs {
 
-		// cast the job key to a string; it should be the uuid
+		// Cast the job key to a string; it should be the uuid.
 		job_uuid := string(job.Key)
 
-		// cast the CheckJobRequest pid to a string
+		// Cast the CheckJobRequest pid to a string.
 		cjr_uuid := strconv.FormatInt(cjr.Pid, 10)
 
 		// if a job exists with the given pid
@@ -90,8 +90,8 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 		}
 	}
 
-	// since the job was not scheduled, perhaps it is active, so go ahead
-	// and cycle thru all of the process refs
+	// Since the job was not scheduled, perhaps it is active, so go ahead
+	// and cycle thru all of the process refs.
 	for _, p := range processesList {
 
 		// if a job exists with the given pid
@@ -108,7 +108,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	return &pb.CheckJobResponse{Rc: 1}, nil
 }
 
-//! API function to stop a job
+//! The gRPC API function to stop a job.
 /*
  * @param     Context            given host context
  * @param     StartJobRequest    object to hold the start job request
@@ -119,10 +119,10 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 func (s *LclusterdServer) StopJob(ctx context.Context,
 	request *pb.StopJobRequest) (*pb.StopJobResponse, error) {
 
-	// create a response husk for use later on...
+	// Create a response husk for use later on.
 	response := &pb.StopJobResponse{}
 
-	// request that the etcd server hand back the process
+	// Request that the etcd server hand back the process.
 	process, err := etcdServer.obtainProcess(request.Pid)
 
 	// if any error occurred, pass it back

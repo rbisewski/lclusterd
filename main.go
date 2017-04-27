@@ -8,11 +8,11 @@ package main
 
 import "flag"
 
-//
-// Globals
-//
+/*
+ * Globals
+ */
 
-// Network Namespace
+// The global network namespace.
 //
 // TODO: right now this program treats `namespace` as a hostname or IPv4
 // address, rather than an actual network namespace; this ought to be fixed
@@ -22,16 +22,16 @@ import "flag"
 //
 var namespace string
 
-// Etcd Server
+// The global etcd server.
 var etcdServer *EtcdInstance
 
-// Scheduler
+// The global scheduler.
 var scheduler *Scheduler
 
-// List of current processes
+// The global list of current processes.
 var processesList map[int64]*Process
 
-// Rootfs Location
+// The global rootfs location; it gets defined via commandline argument.
 var rootfs string
 
 // Initialize the flags beforehand.
@@ -46,9 +46,10 @@ func init() {
 		"Rootfs POSIX directory location for runc")
 }
 
-//
-// Main
-//
+//! The program main function.
+/*
+ * @return    none
+ */
 func main() {
 
 	// Ensure that no more than 2 arguments are given, else print the usage
@@ -82,7 +83,7 @@ func main() {
 		return
 	}
 
-	// attempt to start the etcd server in the background so that the
+	// Attempt to start the etcd server in the background so that the
 	// instances are able to store and obtain key-values.
 	etcdBgSuccessfullyStarted := StartEtcdServerBackgroundProcess()
 
@@ -113,13 +114,14 @@ func main() {
 	// Print out some informative information about how the rootfs dir.
 	stdlog("Rootfs Location: " + rootfs)
 
-	// Go ahead and start the Scheduler.
+	// Go ahead and declare a global scheduler husk, which allows the
+        // program to start using the Scheduler.
 	scheduler = &Scheduler{}
 
 	// Mention that the global scheduler has now started.
 	stdlog("Scheduler startup on " + getHostname())
 
-	// Go ahead and start the etcd server instance.
+	// Go ahead and start an etcd server instance.
 	etcd_server_inst, err := CreateEtcdInstance(namespace + etcdClientPort)
 
 	// Safety check, ensure that no errors have occurred during startup of

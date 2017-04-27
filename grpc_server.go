@@ -12,18 +12,14 @@ import (
 	"net"
 )
 
-//
 // Definition of the LclusterdServer, useful with grpc proto.
-//
 type LclusterdServer struct {
 }
 
-//
-// Jobs are merely gRPC obj refs
-//
+// Jobs are merely gRPC obj refs.
 type Job pb.StartJobRequest
 
-//! Start a grpc server instance
+//! Start a grpc server instance.
 /*
  * @return    none
  */

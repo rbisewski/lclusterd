@@ -1,22 +1,21 @@
-//
-// File: lclusterpb.proto
-//
-// Description: prototype for remote process calls
-//
+/*
+* File: lclusterpb.proto
+*
+* Description: prototype for remote process calls
+*/
 
 syntax = "proto3";
 
 package lclusterpb;
 
+// Define a Lclusterd service for gRPC usage.
 service Lclusterd {
     rpc StartJob (StartJobRequest) returns (StartJobResponse) {} 
     rpc CheckJob (CheckJobRequest) returns (CheckJobResponse) {}
     rpc StopJob (StopJobRequest) returns (StopJobResponse) {}
 }
 
-//
-// StartJobRequest definition
-//
+// The StartJobRequest definition.
 message StartJobRequest {
 
     // Description
@@ -34,9 +33,7 @@ message StartJobRequest {
     int64 pid            = 6;
 }
 
-//
-// StartJobResponse definition
-//
+// The StartJobResponse definition.
 message StartJobResponse {
 
     // Process id, can be -1 if an error occurs
@@ -46,18 +43,14 @@ message StartJobResponse {
     string error = 2;
 }
 
-//
-// CheckJobRequest definition
-//
+// The CheckJobRequest definition.
 message CheckJobRequest {
 
     // Process id of the job intending to check
     int64 pid = 1;
 }
 
-//
-// CheckJobResponse definition
-//
+// The CheckJobResponse definition.
 message CheckJobResponse {
 
     // Response code, as int64
@@ -74,18 +67,14 @@ message CheckJobResponse {
     string error = 2;
 }
 
-//
-// StopJobRequest definition
-//
+// The StopJobRequest definition.
 message StopJobRequest {
 
     // Process id of the job intending to stop
     int64 pid = 1;
 }
 
-//
-// StopJobResponse definition
-//
+// The StopJobResponse definition.
 message StopJobResponse {
 
     // Response code, as int64

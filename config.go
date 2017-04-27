@@ -6,10 +6,10 @@
 
 package main
 
-// if this is enabled, print debug messages
+// If this is enabled, print debug messages.
 const debugMode = true
 
-// location of the etcd binary, as a POSIX dir path
+// Location of the etcd binary, as a POSIX dir path.
 const etcdBinaryPath = "/usr/bin/etcd"
 
 // Storage location of the etcd server data dir; in the function
@@ -23,16 +23,16 @@ const etcdDataDir = "/tmp/etcd_"
 const etcdClientPort = ":2379"
 const etcdServerPort = ":2380"
 
-// IPv4 address of the gRPC server
+// IPv4 address of the gRPC server.
 const grpcServerAddr = "localhost"
 
-// High number port for use by the gRPC server
+// High number port for use by the gRPC server.
 const grpcPort = ":64051"
 
-// Etcd grace period, in seconds
+// Etcd grace period, in seconds.
 const etcdGracePeriod = 3
 
-// Prefered Command Shell
+// Prefered command shell.
 const sh = "/bin/bash"
 
 // Variables needed by etcd to store values.
@@ -43,14 +43,14 @@ const queue_dir = "/queue"
 const failed_nodes_dir = "/failed_nodes"
 const warned_jobs_dir = "/warned_jobs"
 
-// Location to hold which node is currently ready, aka 'primed'
+// Location to hold which node is currently ready, aka 'primed'.
 const primed = "/primed"
 
-// TTL lock values, in seconds
+// TTL lock values, in seconds.
 const primedTTL = 4
 const nlistTTL = 4
 
-// CheckJobResponse return code constants
+// CheckJobResponse return code constants.
 //
 // -1 --> failure, due to corrupted server or input
 //  0 --> unknown job status
@@ -64,7 +64,7 @@ const CJR_PROCESS_NOT_EXIST = 1
 const CJR_PROCESS_QUEUED = 2
 const CJR_PROCESS_ACTIVE = 3
 
-// StopJobResponse return code constants
+// StopJobResponse return code constants.
 //
 // -1 --> failure, due to corrupted server or input
 //  0 --> success
@@ -75,7 +75,7 @@ const SJR_SUCCESS = 0
 const SJR_DOES_NOT_EXIST = 1
 
 /* --------------------------------------------------
- * Capabilities the libcontainer instances will need:
+ * Capabilities the libcontainer instances will need.
  * --------------------------------------------------
  *
  * chown

@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-//! Assemble and return a libcontainer config
+//! Assemble and return a libcontainer config.
 /*
  * @param    container_name    pseudo-random name of container
  * @param    hostname          given hostname
@@ -21,10 +21,10 @@ import (
 func generateLibcontainerConfig(container_name string,
 	hostname string) *configs.Config {
 
-	// Set the default mounting flags
+	// Set the default mounting flags.
 	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
 
-	// Assemble the new config
+	// Assemble the new config for the container.
 	new_config := &configs.Config{
 
 		Rootfs: rootfs,

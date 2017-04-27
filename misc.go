@@ -8,14 +8,14 @@
 package main
 
 import (
-    "crypto/rand"
-    "encoding/base64"
-    "fmt"
-    "io/ioutil"
-    "os"
-    "os/signal"
-    "strings"
-    "time"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/signal"
+	"strings"
+	"time"
 )
 
 //! Wrapper to make golang error funcs seem more C-like
@@ -26,13 +26,13 @@ import (
  */
 func errorf(ascii string) error {
 
-    // Input validation
-    if len(ascii) < 1 {
-        return nil
-    }
+	// Input validation
+	if len(ascii) < 1 {
+		return nil
+	}
 
-    // Attempt to print the content to stdout
-    return fmt.Errorf(ascii)
+	// Attempt to print the content to stdout
+	return fmt.Errorf(ascii)
 }
 
 //! Wrapper to make golang print funcs seem more C-like
@@ -43,13 +43,13 @@ func errorf(ascii string) error {
  */
 func printf(ascii string) {
 
-    // Input validation
-    if len(ascii) < 1 {
-        return
-    }
+	// Input validation
+	if len(ascii) < 1 {
+		return
+	}
 
-    // Attempt to print the content to stdout
-    fmt.Printf(ascii + "\n")
+	// Attempt to print the content to stdout
+	fmt.Printf(ascii + "\n")
 }
 
 //! Wrapper to give a log-like appearance to stdout
@@ -60,16 +60,16 @@ func printf(ascii string) {
  */
 func stdlog(ascii string) {
 
-    // Input validation
-    if len(ascii) < 1 {
-        return
-    }
+	// Input validation
+	if len(ascii) < 1 {
+		return
+	}
 
-    // Grab the current time in seconds from epoch.
-    currentTime := time.Now().String()
+	// Grab the current time in seconds from epoch.
+	currentTime := time.Now().String()
 
-    // Append the timestamp to the string message.
-    printf("[" + currentTime + "] " + ascii)
+	// Append the timestamp to the string message.
+	printf("[" + currentTime + "] " + ascii)
 }
 
 //! Function to print out debug messages
@@ -80,21 +80,21 @@ func stdlog(ascii string) {
  */
 func debugf(ascii string) {
 
-    // Input validation
-    if len(ascii) < 1 {
-        return
-    }
+	// Input validation
+	if len(ascii) < 1 {
+		return
+	}
 
-    // ensure debug mode is actually on
-    if !debugMode {
-        return
-    }
+	// ensure debug mode is actually on
+	if !debugMode {
+		return
+	}
 
-    // Grab the current time in seconds from epoch.
-    currentTime := time.Now().String()
+	// Grab the current time in seconds from epoch.
+	currentTime := time.Now().String()
 
-    // Append the timestamp to the string message.
-    printf("[" + currentTime + "] DEBUG - " + ascii)
+	// Append the timestamp to the string message.
+	printf("[" + currentTime + "] DEBUG - " + ascii)
 }
 
 //! Determine if a given directory location actually exists.
@@ -105,21 +105,21 @@ func debugf(ascii string) {
  */
 func directoryExists(path string) bool {
 
-    // input validation
-    if len(path) < 1 {
-        return false
-    }
+	// input validation
+	if len(path) < 1 {
+		return false
+	}
 
-    // attempt to read the directory and its contents, if any
-    _, err := ioutil.ReadDir(path)
+	// attempt to read the directory and its contents, if any
+	_, err := ioutil.ReadDir(path)
 
-    // if an error occurred, then assume this is probably not a directory
-    if err != nil {
-        return false
-    }
+	// if an error occurred, then assume this is probably not a directory
+	if err != nil {
+		return false
+	}
 
-    // otherwise this succeeded, in which case return true
-    return true
+	// otherwise this succeeded, in which case return true
+	return true
 }
 
 //! Function to grab the hostname at a given context
@@ -128,16 +128,16 @@ func directoryExists(path string) bool {
  */
 func getHostname() string {
 
-    // attempt to grab the hostname
-    hostname, err := os.Hostname()
+	// attempt to grab the hostname
+	hostname, err := os.Hostname()
 
-    // safety check, ensure no error occurred
-    if err != nil {
-        return "n/a"
-    }
+	// safety check, ensure no error occurred
+	if err != nil {
+		return "n/a"
+	}
 
-    // otherwise this has a hostname, go ahead and pass it back
-    return hostname
+	// otherwise this has a hostname, go ahead and pass it back
+	return hostname
 }
 
 //! Determine if a SIGINT was thrown, and if so, handle it.
@@ -146,20 +146,20 @@ func getHostname() string {
  */
 func loopUtilSIGINT() {
 
-    // Define a new variable for dealing with OS signals
-    checker := make(chan os.Signal, 1)
+	// Define a new variable for dealing with OS signals
+	checker := make(chan os.Signal, 1)
 
-    // Make it notify the end-user upon receiving a signal.
-    signal.Notify(checker, os.Interrupt)
+	// Make it notify the end-user upon receiving a signal.
+	signal.Notify(checker, os.Interrupt)
 
-    // Activate the checker
-    <-checker
+	// Activate the checker
+	<-checker
 
-    // Tell stderr what occurred.
-    stdlog("SIGINT detected, terminating program...\n")
+	// Tell stderr what occurred.
+	stdlog("SIGINT detected, terminating program...\n")
 
-    // Send the exit.
-    os.Exit(0)
+	// Send the exit.
+	os.Exit(0)
 }
 
 //! Spawns a pseudo-random string based on /dev/random
@@ -170,41 +170,41 @@ func loopUtilSIGINT() {
  */
 func spawnPseudorandomString(num int) string {
 
-    // handle the case where an end user might enter 0 or less
-    if num < 1 {
-        return ""
-    }
+	// handle the case where an end user might enter 0 or less
+	if num < 1 {
+		return ""
+	}
 
-    // assign a chunk of memory for holding the bytes
-    byteArray := make([]byte, num)
+	// assign a chunk of memory for holding the bytes
+	byteArray := make([]byte, num)
 
-    // populate the byte array with cryptographically secure pseudo-random
-    // numbers, up to a max of `num` as per the param to this function
-    _, err := rand.Read(byteArray)
+	// populate the byte array with cryptographically secure pseudo-random
+	// numbers, up to a max of `num` as per the param to this function
+	_, err := rand.Read(byteArray)
 
-    // safety check, ensure no error occurred
-    if err != nil {
-        stdlog("spawnPseudorandomString() --> unable to spawn crypto num!")
-        return ""
-    }
+	// safety check, ensure no error occurred
+	if err != nil {
+		stdlog("spawnPseudorandomString() --> unable to spawn crypto num!")
+		return ""
+	}
 
-    // base64 encode the result
-    pseudoRandStr := base64.URLEncoding.EncodeToString(byteArray)
+	// base64 encode the result
+	pseudoRandStr := base64.URLEncoding.EncodeToString(byteArray)
 
-    // safety check, ensure no error occurred
-    if len(pseudoRandStr) < 1 {
-        stdlog("spawnPseudorandomString() --> unable to base64 encode!")
-        return ""
-    }
+	// safety check, ensure no error occurred
+	if len(pseudoRandStr) < 1 {
+		stdlog("spawnPseudorandomString() --> unable to base64 encode!")
+		return ""
+	}
 
-    // trim away any = chars since they are not needed
-    pseudoRandStr = strings.Trim(pseudoRandStr,"=")
+	// trim away any = chars since they are not needed
+	pseudoRandStr = strings.Trim(pseudoRandStr, "=")
 
-    // replace certain non-alpha chars with alphas, if any
-    pseudoRandStr = strings.Replace(pseudoRandStr,"-","ww",-1)
-    pseudoRandStr = strings.Replace(pseudoRandStr,"+","vv",-1)
-    pseudoRandStr = strings.Replace(pseudoRandStr,"_","uu",-1)
+	// replace certain non-alpha chars with alphas, if any
+	pseudoRandStr = strings.Replace(pseudoRandStr, "-", "ww", -1)
+	pseudoRandStr = strings.Replace(pseudoRandStr, "+", "vv", -1)
+	pseudoRandStr = strings.Replace(pseudoRandStr, "_", "uu", -1)
 
-    // otherwise return the (sufficiently?) random base64 string
-    return pseudoRandStr
+	// otherwise return the (sufficiently?) random base64 string
+	return pseudoRandStr
 }

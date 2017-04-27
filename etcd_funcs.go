@@ -7,19 +7,19 @@
 package main
 
 import (
-    "time"
-    "os/exec"
-    clientv3 "github.com/coreos/etcd/clientv3"
+	clientv3 "github.com/coreos/etcd/clientv3"
+	"os/exec"
+	"time"
 )
 
 // Etcd Instance Structure
 type EtcdInstance struct {
 
-    // Internal pointer to the server itself
-    internal *clientv3.Client
+	// Internal pointer to the server itself
+	internal *clientv3.Client
 
-    // Pointer to nodes
-    node *Node
+	// Pointer to nodes
+	node *Node
 }
 
 //! Function to start etcd in the background
@@ -28,58 +28,58 @@ type EtcdInstance struct {
  */
 func StartEtcdServerBackgroundProcess() bool {
 
-    // input validation, ensure that the global network namespace value
-    // gets set to something safe; note that this value is set in the main
-    // routine of main.go
-    if len(namespace) < 1 {
-        printf("Error: Improper network namespace length!")
-        return false
-    }
+	// input validation, ensure that the global network namespace value
+	// gets set to something safe; note that this value is set in the main
+	// routine of main.go
+	if len(namespace) < 1 {
+		printf("Error: Improper network namespace length!")
+		return false
+	}
 
-    // current protocol being used
-    protocol := "http://"
+	// current protocol being used
+	protocol := "http://"
 
-    // Assemble a command based on the client / server ports and given
-    // global etcd server address.
-    //
-    // Note: this appends a 32 digit number to etcd data dir ensure the
-    // given etcd session is unique
-    initial_advertise_peer_urls := protocol + namespace + etcdServerPort
-    listen_peer_urls            := protocol + namespace + etcdServerPort
-    listen_client_urls          := protocol + namespace + etcdClientPort
-    advertise_client_urls       := protocol + namespace + etcdClientPort
-    data_dir_w_unique_cryptonum := etcdDataDir + spawnPseudorandomString(32)
+	// Assemble a command based on the client / server ports and given
+	// global etcd server address.
+	//
+	// Note: this appends a 32 digit number to etcd data dir ensure the
+	// given etcd session is unique
+	initial_advertise_peer_urls := protocol + namespace + etcdServerPort
+	listen_peer_urls := protocol + namespace + etcdServerPort
+	listen_client_urls := protocol + namespace + etcdClientPort
+	advertise_client_urls := protocol + namespace + etcdClientPort
+	data_dir_w_unique_cryptonum := etcdDataDir + spawnPseudorandomString(32)
 
-    // create a string array to hold all of the necessary arguments
-    var etcdArgs = []string{
-        "--name",
-        namespace,
-        "--initial-advertise-peer-urls",
-        initial_advertise_peer_urls,
-        "--listen-peer-urls",
-        listen_peer_urls,
-        "--listen-client-urls",
-        listen_client_urls,
-        "--advertise-client-urls",
-        advertise_client_urls,
-        "--data-dir",
-        data_dir_w_unique_cryptonum,
-    }
+	// create a string array to hold all of the necessary arguments
+	var etcdArgs = []string{
+		"--name",
+		namespace,
+		"--initial-advertise-peer-urls",
+		initial_advertise_peer_urls,
+		"--listen-peer-urls",
+		listen_peer_urls,
+		"--listen-client-urls",
+		listen_client_urls,
+		"--advertise-client-urls",
+		advertise_client_urls,
+		"--data-dir",
+		data_dir_w_unique_cryptonum,
+	}
 
-    // attempt to exec the command
-    err := exec.Command(etcdBinaryPath, etcdArgs...).Start()
+	// attempt to exec the command
+	err := exec.Command(etcdBinaryPath, etcdArgs...).Start()
 
-    // if an error occurred, print it out and pass back a false
-    if err != nil {
-        printf(err.Error())
-        printf("Error: Unable to start background etcd service!")
-        return false
-    }
+	// if an error occurred, print it out and pass back a false
+	if err != nil {
+		printf(err.Error())
+		printf("Error: Unable to start background etcd service!")
+		return false
+	}
 
-    // otherwise if everything turned out fine, pass back a true
-    printf(" ")
-    stdlog("Background etcd service started successfully.")
-    return true
+	// otherwise if everything turned out fine, pass back a true
+	printf(" ")
+	stdlog("Background etcd service started successfully.")
+	return true
 }
 
 //! Creates a new EtcdInstance and returns a pointer to it
@@ -93,43 +93,43 @@ func StartEtcdServerBackgroundProcess() bool {
  */
 func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 
-    // Input validation, make sure this actually got a string
-    if len(socket) < 1 {
-        return nil, errorf("CreateEtcdInstance() --> invalid input")
-    }
+	// Input validation, make sure this actually got a string
+	if len(socket) < 1 {
+		return nil, errorf("CreateEtcdInstance() --> invalid input")
+	}
 
-    // Make a client configuration for use with generating the etcd client
-    // instance later on...
-    etcdClientConfiguration := clientv3.Config{
-                         Endpoints: []string{namespace+etcdClientPort},
-		         DialTimeout: 5 * time.Second,
-                        }
+	// Make a client configuration for use with generating the etcd client
+	// instance later on...
+	etcdClientConfiguration := clientv3.Config{
+		Endpoints:   []string{namespace + etcdClientPort},
+		DialTimeout: 5 * time.Second,
+	}
 
-    // Use the above configuration to set the new client.
-    newlyGeneratedClient, err := clientv3.New(etcdClientConfiguration)
+	// Use the above configuration to set the new client.
+	newlyGeneratedClient, err := clientv3.New(etcdClientConfiguration)
 
-    // Safety check, ensure the above config is not nil.
-    if err != nil {
-        return nil, errorf("CreateEtcdInstance() --> improperly " +
-                           "generated client due to...\n" +
-                           err.Error())
-    }
+	// Safety check, ensure the above config is not nil.
+	if err != nil {
+		return nil, errorf("CreateEtcdInstance() --> improperly " +
+			"generated client due to...\n" +
+			err.Error())
+	}
 
-    // assign the details of the new node as per...
-    //
-    // HostName: hostname of the server
-    // HostID:   n_XYZ
-    //
-    // where XYZ is just a random crypto num of base64 w/ roughly 16 digits
-    //
-    node := &Node{
-        HostName: getHostname(),
-        HostID:   "n_" + spawnPseudorandomString(16),
-    }
+	// assign the details of the new node as per...
+	//
+	// HostName: hostname of the server
+	// HostID:   n_XYZ
+	//
+	// where XYZ is just a random crypto num of base64 w/ roughly 16 digits
+	//
+	node := &Node{
+		HostName: getHostname(),
+		HostID:   "n_" + spawnPseudorandomString(16),
+	}
 
-    // Create an etcdInstance using the new internal client
-    inst = &EtcdInstance{internal: newlyGeneratedClient, node: node}
+	// Create an etcdInstance using the new internal client
+	inst = &EtcdInstance{internal: newlyGeneratedClient, node: node}
 
-    // Return the completed etcdInstance
-    return inst, nil
+	// Return the completed etcdInstance
+	return inst, nil
 }

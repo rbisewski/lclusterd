@@ -7,9 +7,9 @@
 package main
 
 import (
-    "net"
-    pb "./lclusterpb"
-    grpc "google.golang.org/grpc"
+	pb "./lclusterpb"
+	grpc "google.golang.org/grpc"
+	"net"
 )
 
 //
@@ -29,24 +29,24 @@ type Job pb.StartJobRequest
  */
 func startServerInstanceOfGRPC() {
 
-    // Listen the defined grpc port.
-    listener, err := net.Listen("tcp", grpcPort)
+	// Listen the defined grpc port.
+	listener, err := net.Listen("tcp", grpcPort)
 
-    // Safety check, make sure an error didn't occur.
-    if err != nil {
-        printf(err.Error())
-        panic("Error: Unable to start gRPC server on the requested port!")
-    }
+	// Safety check, make sure an error didn't occur.
+	if err != nil {
+		printf(err.Error())
+		panic("Error: Unable to start gRPC server on the requested port!")
+	}
 
-    // Initialize gRPC to get a server.
-    remoteProcessCallServer := grpc.NewServer()
+	// Initialize gRPC to get a server.
+	remoteProcessCallServer := grpc.NewServer()
 
-    // Mention that the grpc server has now started.
-    stdlog("gRPC server startup successful.")
+	// Mention that the grpc server has now started.
+	stdlog("gRPC server startup successful.")
 
-    // Registering grpc with the lclusterd server
-    pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
+	// Registering grpc with the lclusterd server
+	pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
 
-    // Set the server to serve on the port that listener is using
-    remoteProcessCallServer.Serve(listener)
+	// Set the server to serve on the port that listener is using
+	remoteProcessCallServer.Serve(listener)
 }

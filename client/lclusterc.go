@@ -165,28 +165,28 @@ func checkJobOnServer(uuid string) {
     }
 
     // If an internal server-side error has occurred...
-    if response.Rc == -1 {
+    if response.Rc == CJR_CORRUPTED_SERVER_INPUT {
         fmt.Printf("An internal server-side error has occurred.\n")
         return
 
     // Unknown job state
-    } else if response.Rc == 0 {
+    } else if response.Rc == CJR_UNKNOWN {
         fmt.Printf("The job '" + uuid + "' appears to have an unknown " +
                    "status.\nConsider contacting the server operator.\n")
         return
 
     // Job does not exist
-    } else if response.Rc == 1 {
+    } else if response.Rc == CJR_PROCESS_NOT_EXIST {
         fmt.Printf("The job '" + uuid + "' is not present.\n")
         return
 
     // Job is queued
-    } else if response.Rc == 2 {
+    } else if response.Rc == CJR_PROCESS_QUEUED {
         fmt.Printf("The job '" + uuid + "' is queued.\n")
         return
 
     // Job is currently running
-    } else if response.Rc == 3 {
+    } else if response.Rc == CJR_PROCESS_ACTIVE {
         fmt.Printf("The job '" + uuid + "' is currently active.\n")
         return
     }
@@ -263,7 +263,7 @@ func removeJobFromServer(uuid string) {
 
     // check the return code from the StopJobResponse object, if it -1 then
     // an error has occurred.
-    if response.Rc == -1 {
+    if response.Rc == SJR_FAILURE {
         fmt.Printf("Server has responded with the following error:\n")
         fmt.Printf(response.Error + "\n")
         return
@@ -272,16 +272,24 @@ func removeJobFromServer(uuid string) {
     // with a return code of `1` then the process could not be found, but
     // the server otherwise experienced no error while processing the
     // request
-    if response.Rc == 1 {
+    if response.Rc == SJR_DOES_NOT_EXIST {
         fmt.Printf("No such process exists with Uuid: " +
                strconv.FormatInt(pid, 10) + "\n")
         return
     }
 
     // Since this has obtained a response, go ahead and return the result
-    fmt.Printf("Successfully removed job of pid: " +
-               strconv.FormatInt(pid, 10) + "\n")
-    return
+    if response.Rc == SJR_SUCCESS {
+        fmt.Printf("Successfully removed job of pid: " +
+                   strconv.FormatInt(pid, 10) + "\n")
+        return
+    }
+
+    // otherwise if none of the above happened, print out a message
+    // stating this is unknown, with the response code
+    fmt.Printf("The following undefined response code was given back: " +
+      strconv.FormatInt(response.Rc,10) + "\n")
+    fmt.Printf("Consider contacting the server operator.\n")
 }
 
 //

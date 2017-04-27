@@ -50,6 +50,30 @@ const primed           = "/primed"
 const primedTTL        = 4
 const nlistTTL         = 4
 
+// CheckJobResponse return code constants
+//
+// -1 --> failure, due to corrupted server or input
+//  0 --> unknown job status
+//  1 --> process does not exist
+//  2 --> process is queued
+//  3 --> process is active on a node
+//
+const CJR_CORRUPTED_SERVER_INPUT = -1
+const CJR_UNKNOWN                =  0
+const CJR_PROCESS_NOT_EXIST      =  1
+const CJR_PROCESS_QUEUED         =  2
+const CJR_PROCESS_ACTIVE         =  3
+
+// StopJobResponse return code constants
+//
+// -1 --> failure, due to corrupted server or input
+//  0 --> success
+//  1 --> process does not exist
+//
+const SJR_FAILURE                = -1
+const SJR_SUCCESS                =  0
+const SJR_DOES_NOT_EXIST         =  1
+
 /* --------------------------------------------------
  * Capabilities the libcontainer instances will need:
  * --------------------------------------------------

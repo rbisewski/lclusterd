@@ -77,7 +77,7 @@ func StartProcess(j Job) (p *Process, err error) {
     }
 
     // make a crypto safe pseudo random string as the id
-    containerID := spawnPseudorandomString(10)
+    containerID := spawnPseudorandomString(16)
 
     // set the location of the container
     containerName := filepath.Base(j.Path) + "_" + containerID
@@ -153,6 +153,12 @@ func StopProcess(p *Process) error {
 
     // attempt to free memory from the container
     p.container.Destroy()
+
+    // attempt to remove the process from the global list of processes, in
+    // the event it is still present
+    if processesList[p.uuid] != nil {
+        delete(processesList, p.uuid)
+    }
 
     // everything turned out good, so pass back nil
     return nil

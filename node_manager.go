@@ -550,7 +550,9 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
             // otherwise the job started successful, so go ahead and print
             // out a helpful message
             stdlog("New job started (" + j.Path + ") in a node on cluster " +
-                   "host " + inst.node.HostID)
+                   "host: " + inst.node.HostName)
+            debugf("Primed node that received job has uuid: " +
+                   inst.node.HostID)
         }
     }
 }
@@ -742,6 +744,16 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
     response, err := inst.internal.Get(ctx, path.Join(nodes_dir, hid),
       clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
+    // if debug mode...
+    if debugMode && err == nil {
+
+        // cycle thru all of the current nodes for the benefit of the developer
+        debugf("The primed node contains the following:")
+        for _, ent := range response.Kvs {
+            debugf(string(ent.Key) + " => " + string(ent.Value))
+        }
+    }
+
     // cancel the current context as it is no longer needed
     cancel()
 
@@ -749,6 +761,12 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
     if err != nil {
         stdlog("QueueJobOnNode() --> unable to get response from primed node")
         return err
+    }
+
+    // further safety check, ensure the primed node is not null
+    if len(response.Kvs) < 1 {
+        stdlog("QueueJobOnNode() --> primed node appears to be null")
+        return errorf("QueueJobOnNode() --> primed node appears to be null")
     }
 
     // unmarshal the recovered response data
@@ -760,7 +778,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
     }
 
     // Job ID is the next index in the array.
-    uuid := uint64(len(response.Kvs))
+    uuid := strconv.FormatInt(j.Pid, 10)
 
     // marshal the job data
     mresult, err := json.Marshal(j)
@@ -770,7 +788,15 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
         return err
     }
 
-    // place the job on the queue of the node
+    // since the primed node gave back a valid response, this needs to
+    // place the job on the queue of the node; so firstly assemble the
+    // queue path on etcd as per the following:
+    //
+    // key => /nodes/jobs/uuid
+    //
+    // developer note: the queued job of uuid is waiting, and its details
+    // can be found in the global 'processesList'
+    //
     jobQueue := path.Join(nodes_dir, hid, "jobs")
 
     // grab the current context, need it to hand off the job to the node
@@ -778,8 +804,15 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
       etcdGracePeriod*time.Second)
 
     // insert the job into the job queue of the node
-    _, err = inst.internal.Put(ctx, path.Join(jobQueue,
-      strconv.FormatUint(uuid, 10)), string(mresult))
+    responseToJobAddToNode, err := inst.internal.Put(ctx,
+      path.Join(jobQueue, uuid), string(mresult))
+
+    // if debug mode...
+    if debugMode && err == nil && responseToJobAddToNode != nil {
+
+        // tell the developer what happened at this stage...
+        debugf("Node manager has responsed with valid put response.")
+    }
 
     // cancel the current context as this no longer needs it
     cancel()
@@ -799,7 +832,9 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
     }
 
     // print out a helpful message about where the new job was queued
-    stdlog("A new job was added to the following node: " + node.HostName)
+    stdlog("A new job was added to a node on the following host: " +
+           node.HostName)
+    debugf("Primed node uuid was: " + node.HostID)
 
     // everything was a success, so return nil here
     return nil
@@ -919,6 +954,7 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
     }
 
     // for every key entry in the nodes location...
+    debugf("The following nodes are present on the list:")
     for _, entry := range response.Kvs {
 
         // parse the entry into pieces, useful for checking the hostname
@@ -947,6 +983,8 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
         // having obtained the data correctly, append it to the list of
         // nodes array that eventually gets passed back
         nodes = append(nodes, &node)
+        debugf(string(entry.Key) + " => hostname: " + node.HostName +
+               ", host id: " + node.HostID)
     }
 
     // pass back the completed list of nodes

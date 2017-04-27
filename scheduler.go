@@ -24,12 +24,12 @@ type Scheduler struct {
 
 //! Sync the global scheduler with the node manager
 /*
- * @param    string    hostname
+ * @param    string    primed node uuid
  * @param    *Node[]   array of node pointers
  *
  * @return   none
  */
-func syncScheduler(hostname string, nodes []*Node) {
+func syncScheduler(hid string, nodes []*Node) {
 
     // assign memory for the scheduler queue
     scheduler.Queue = make([]*Element, 0)
@@ -40,7 +40,8 @@ func syncScheduler(hostname string, nodes []*Node) {
     }
 
     // Mention that the scheduler has began.
-    stdlog("Scheduler sync'd with NodeManager on " + hostname)
+    stdlog("Scheduler sync'd with NodeManager on " + getHostname())
+    debugf("Primed node uuid: " + hid)
 }
 
 //! Schedule a job on the first available node

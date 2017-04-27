@@ -115,10 +115,16 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
                            err.Error())
     }
 
-    // define the node
+    // assign the details of the new node as per...
+    //
+    // HostName: hostname of the server
+    // HostID:   n_XYZ
+    //
+    // where XYZ is just a random crypto num of base64 w/ roughly 16 digits
+    //
     node := &Node{
         HostName: getHostname(),
-        HostID:   getHostname(),
+        HostID:   "n_" + spawnPseudorandomString(16),
     }
 
     // Create an etcdInstance using the new internal client

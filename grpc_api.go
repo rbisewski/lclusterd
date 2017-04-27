@@ -23,7 +23,7 @@ import (
 func (s *LclusterdServer) StartJob(ctx context.Context,
   r *pb.StartJobRequest) (*pb.StartJobResponse, error) {
 
-    // Variable declaration
+    // create a start job response husk for use later on...
     response := &pb.StartJobResponse{}
 
     // Cast the job request into a Job, then attempt to add it to the
@@ -119,7 +119,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 func (s *LclusterdServer) StopJob(ctx context.Context,
   request *pb.StopJobRequest) (*pb.StopJobResponse, error) {
 
-    // variable declaration
+    // create a response husk for use later on...
     response := &pb.StopJobResponse{}
 
     // request that the etcd server hand back the process

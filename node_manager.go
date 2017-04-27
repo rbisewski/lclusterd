@@ -733,7 +733,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
         return errorf("QueueJobOnNode() --> invalid input")
     }
 
-    // variable declaration
+    // define a node husk; it'll get used later on when this hands the job off to it
     var node Node
 
     // grab the current context

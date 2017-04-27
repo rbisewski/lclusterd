@@ -73,16 +73,16 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
       }
 
       // cycle thru all of the currently queued jobs
-      for _, j := range response.Kvs {
+      for _, job := range response.Kvs {
 
           // cast the job key to a string; it should be the uuid
-          j_uuid := string(j.Key)
+          job_uuid := string(job.Key)
 
           // cast the CheckJobRequest pid to a string
           cjr_uuid := strconv.FormatInt(cjr.Pid, 10)
 
           // if a job exists with the given pid
-          if j_uuid == cjr_uuid {
+          if job_uuid == cjr_uuid {
 
               // pass back a return code of 2, stating that the job is
               // present and currently queued.

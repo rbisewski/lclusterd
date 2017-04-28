@@ -33,8 +33,9 @@ type Process struct {
 func init() {
 
 	//
-	// NOTE: this function was adapted from the etcd docs, ergo whence
-	//       the original informational blurb has been copied from...
+        // NOTE: this function was adapted from the libcontainer docs:
+        //
+        // github.com/opencontainers/runc/blob/master/libcontainer/README.md
 	//
 
 	// Because containers are spawned in a two step process you will need

@@ -10,6 +10,7 @@ import (
         "./lcfg"
         "fmt"
 	pb "./lclusterpb"
+        libetcd "./lib/etcd"
 	"golang.org/x/net/context"
 	"strconv"
 )
@@ -30,7 +31,7 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
 
 	// Cast the job request into a Job, then attempt to add it to the
 	// queue.
-	pid, err := etcdServer.addToGlobalQueue((Job)(*r))
+	pid, err := etcdServer.AddToGlobalQueue((libetcd.Job)(*r))
 
 	// if any errors occur...
 	if err != nil || pid < 0 {
@@ -66,7 +67,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	}
 
 	// Obtain the response, which contains the list of queued jobs.
-	response, err := etcdServer.internal.Get(ctx, lcfg.Queue_dir)
+	response, err := etcdServer.Internal.Get(ctx, lcfg.Queue_dir)
 
 	// if an error occurs here, pass back a return code of 0, since for
 	// whatever reason, the server is unable to query jobs at this time
@@ -94,10 +95,10 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 
 	// Since the job was not scheduled, perhaps it is active, so go ahead
 	// and cycle thru all of the process refs.
-	for _, p := range processesList {
+	for _, p := range etcdServer.ProcessesList {
 
 		// if a job exists with the given pid
-		if p.uuid == cjr.Pid {
+		if p.Uuid == cjr.Pid {
 
 			// pass back a return code of 3, stating that the process is
 			// present and actively running on a node.
@@ -125,7 +126,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	response := &pb.StopJobResponse{}
 
 	// Request that the etcd server hand back the process.
-	process, err := etcdServer.obtainProcess(request.Pid)
+	process, err := etcdServer.ObtainProcess(request.Pid)
 
 	// if any error occurred, pass it back
 	if err != nil {
@@ -136,7 +137,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	}
 
 	// safety check, ensure this actually got a process
-	if process == nil || process.proc == nil {
+	if process == nil || process.Proc == nil {
 		stdlog("No such process exists with Uuid: " +
 			strconv.FormatInt(request.Pid, 10))
 		response.Rc = lcfg.SjrDoesNotExist
@@ -144,7 +145,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	}
 
 	// attempt to stop the given process
-	err = StopProcess(process)
+	err = etcdServer.StopProcess(process)
 
 	// if any error occurred while halting the process, pass it back
 	if err != nil {

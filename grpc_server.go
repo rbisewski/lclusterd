@@ -17,9 +17,6 @@ import (
 type LclusterdServer struct {
 }
 
-// Jobs are merely gRPC obj refs.
-type Job pb.StartJobRequest
-
 //! Start a grpc server instance.
 /*
  * @return    error    error message, if any

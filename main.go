@@ -9,7 +9,8 @@ package main
 import (
     "flag"
     "fmt"
-    "./lcfg"
+    libetcd "./lib/etcd"
+    "os"
 )
 
 /*
@@ -27,13 +28,7 @@ import (
 var namespace string
 
 // The global etcd server.
-var etcdServer *EtcdInstance
-
-// The global scheduler.
-var scheduler *Scheduler
-
-// The global list of current processes.
-var processesList map[int64]*Process
+var etcdServer *libetcd.EtcdInstance
 
 // The global rootfs location; it gets defined via commandline argument.
 var rootfs string
@@ -77,7 +72,7 @@ func main() {
 
 	// Attempt to start the etcd server in the background so that the
 	// instances are able to store and obtain key-values.
-	err := StartEtcdServerBackgroundProcess()
+	err := libetcd.StartEtcdServerBackgroundProcess(namespace)
 
 	// safety check, ensure that the background etcd service has actually
 	// started
@@ -111,22 +106,15 @@ func main() {
 	// Print out some informative information about how the rootfs dir.
 	stdlog("Rootfs Location: " + rootfs)
 
-	// Go ahead and declare a global scheduler husk, which allows the
-        // program to start using the Scheduler.
-	scheduler = &Scheduler{}
-
-        // grab the hostname, if an error occurs, end this here
-        hostname, err := getHostname()
+        // Grab the hostname, if an error occurs, end this here.
+        hostname, err := os.Hostname()
         if err != nil {
             stdlog(err.Error())
             return
         }
 
-	// Mention that the global scheduler has now started.
-	stdlog("Scheduler startup on " + hostname)
-
 	// Go ahead and start an etcd server instance.
-	etcd_server_inst, err := CreateEtcdInstance(namespace + lcfg.EtcdClientPort)
+	etcd_server_inst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
 
 	// Safety check, ensure that no errors have occurred during startup of
 	// the EtcdServer. If it fails to start, go ahead and terminate the

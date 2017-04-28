@@ -7,8 +7,9 @@
 package main
 
 import (
-    "./lcfg"
     "flag"
+    "fmt"
+    "./lcfg"
 )
 
 /*
@@ -70,7 +71,7 @@ func main() {
 	// Do a safety check to ensure that the rootfs is actually a
 	// valid POSIX directory location, and that it actually exists.
 	if !directoryExists(rootfs) {
-		printf("Error: the following directory does not exist: " + rootfs)
+		fmt.Printf("Error: the following directory does not exist: " + rootfs)
 		return
 	}
 
@@ -81,15 +82,15 @@ func main() {
 	// safety check, ensure that the background etcd service has actually
 	// started
 	if err != nil {
-                printf(err.Error())
-		printf("The background etcd service could not be started!")
-		printf("Ensure that some other instance of the service is not " +
+                fmt.Printf(err.Error())
+		fmt.Printf("The background etcd service could not be started!")
+		fmt.Printf("Ensure that some other instance of the service is not " +
 			"already running and in use by another process")
 		return
 	}
 
         // Otherwise the etcd service started correctly.
-	printf(" ")
+	fmt.Printf(" ")
 	stdlog("Background etcd service started successfully.")
 
 	// Having confirmed that the namespace and rootfs location exists,
@@ -158,8 +159,8 @@ func main() {
 
         // if an error, print it out
         if err != nil {
-                printf(err.Error())
-		printf("Error: Unable to start gRPC server on the requested port!")
+                fmt.Printf(err.Error())
+		fmt.Printf("Error: Unable to start gRPC server on the requested port!")
         }
 }
 

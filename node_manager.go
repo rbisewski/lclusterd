@@ -8,6 +8,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"path"
 	"strconv"
 	"strings"
@@ -467,7 +468,7 @@ func (inst *EtcdInstance) obtainProcess(uuid int64) (p *Process, err error) {
 
 	// ensure the uuid is something reasonable
 	if uuid < 0 {
-		return nil, errorf("obtainProcess() --> invalid input")
+		return nil, fmt.Errorf("obtainProcess() --> invalid input")
 	}
 
 	// otherwise return the process in question
@@ -604,7 +605,7 @@ func (inst *EtcdInstance) addToGlobalQueue(j Job) (int64, error) {
 
 	// further check, ensure the instance is safe
 	if inst.internal == nil {
-		return -1, errorf("addToGlobalQueue() --> malformed etcd instance")
+		return -1, fmt.Errorf("addToGlobalQueue() --> malformed etcd instance")
 	}
 
 	// Grab the current context.
@@ -711,7 +712,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 
 	// input validation
 	if j == nil {
-		return errorf("QueueJobOnNode() --> invalid input")
+		return fmt.Errorf("QueueJobOnNode() --> invalid input")
 	}
 
 	// define a node husk; it'll get used later on when this hands the job off to it
@@ -745,7 +746,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 
 	// further safety check, ensure the primed node is not null
 	if len(response.Kvs) < 1 {
-		return errorf("QueueJobOnNode() --> primed node appears to be null")
+		return fmt.Errorf("QueueJobOnNode() --> primed node appears to be null")
 	}
 
 	// unmarshal the recovered response data
@@ -825,7 +826,7 @@ func (inst *EtcdInstance) getNode(hid string) (*Node, error) {
 
 	// input validation
 	if len(hid) < 1 {
-		return nil, errorf("getNode() --> invalid input")
+		return nil, fmt.Errorf("getNode() --> invalid input")
 	}
 
 	// Grab the current context.
@@ -846,7 +847,7 @@ func (inst *EtcdInstance) getNode(hid string) (*Node, error) {
 
 	// safety check, ensure the value is something proper
 	if len(response.Kvs) < 1 {
-		return nil, errorf("No node with a Host id " + hid +
+		return nil, fmt.Errorf("No node with a Host id " + hid +
 			" detected in the store")
 	}
 
@@ -873,7 +874,7 @@ func (inst *EtcdInstance) putNode(node *Node) error {
 
 	// input validation, make sure this actually got a node
 	if node == nil {
-		return errorf("putNode() --> invalid input")
+		return fmt.Errorf("putNode() --> invalid input")
 	}
 
 	// Marshal the node data.

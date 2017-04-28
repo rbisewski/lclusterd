@@ -6,6 +6,7 @@
 package main
 
 import (
+        "fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -123,7 +124,7 @@ func StopProcess(p *Process) error {
 
 	// input validation
 	if p == nil {
-		return errorf("StopProcess() --> invalid input\n")
+		return fmt.Errorf("StopProcess() --> invalid input\n")
 	}
 
 	// safety check, ensure this is actually a process

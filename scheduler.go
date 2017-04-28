@@ -6,6 +6,10 @@
 
 package main
 
+import (
+    "fmt"
+)
+
 // The element definition, which are individuals in the queue.
 type Element struct {
 	node *Node
@@ -62,7 +66,7 @@ func scheduleJob(srv *EtcdInstance, j *Job) error {
 
 	// input validation
 	if j == nil {
-		return errorf("scheduleJob() --> invalid input")
+		return fmt.Errorf("scheduleJob() --> invalid input")
 	}
 
 	// Determine the current size of the queue.
@@ -70,7 +74,7 @@ func scheduleJob(srv *EtcdInstance, j *Job) error {
 
 	// if no nodes are available, do nothing
 	if qsize == 0 {
-		return errorf("Zero nodes are currently available...")
+		return fmt.Errorf("Zero nodes are currently available...")
 	}
 
 	// Grab a pointer to the end of the queue.

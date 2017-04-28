@@ -8,6 +8,7 @@ package main
 
 import (
         "./lcfg"
+        "fmt"
 	pb "./lclusterpb"
 	"golang.org/x/net/context"
 	"strconv"
@@ -61,7 +62,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	// input validation
 	if cjr == nil || cjr.Pid < 1 {
 		return &pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput},
-                  errorf("CheckJob() --> invalid input")
+                  fmt.Errorf("CheckJob() --> invalid input")
 	}
 
 	// Obtain the response, which contains the list of queued jobs.

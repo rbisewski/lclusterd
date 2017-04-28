@@ -7,6 +7,7 @@
 package main
 
 import (
+        "fmt"
         "./lcfg"
 	clientv3 "github.com/coreos/etcd/clientv3"
 	"os/exec"
@@ -33,7 +34,7 @@ func StartEtcdServerBackgroundProcess() error {
 	// gets set to something safe; note that this value is set in the main
 	// routine of main.go
 	if len(namespace) < 1 {
-		return errorf("Error: Improper network namespace length!")
+		return fmt.Errorf("Error: Improper network namespace length!")
 	}
 
 	// Current protocol being used.
@@ -86,7 +87,7 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 
 	// Input validation, make sure this actually got a string
 	if len(socket) < 1 {
-		return nil, errorf("CreateEtcdInstance() --> invalid input")
+		return nil, fmt.Errorf("CreateEtcdInstance() --> invalid input")
 	}
 
 	// Make a client configuration for use with generating the etcd client
@@ -101,7 +102,7 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 
 	// Safety check, ensure the above config is not nil.
 	if err != nil {
-		return nil, errorf("CreateEtcdInstance() --> improperly " +
+		return nil, fmt.Errorf("CreateEtcdInstance() --> improperly " +
 			"generated client due to...\n" +
 			err.Error())
 	}

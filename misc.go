@@ -19,40 +19,6 @@ import (
 	"./lcfg"
 )
 
-//! Wrapper to make golang error funcs seem more C-like.
-/*
- * @param     string    ASCII to dump to stdout
- *
- * @return    error     error message, if any
- */
-func errorf(ascii string) error {
-
-	// Input validation
-	if len(ascii) < 1 {
-		return nil
-	}
-
-	// Attempt to print the content to stdout
-	return fmt.Errorf(ascii)
-}
-
-//! Wrapper to make golang print funcs seem more C-like.
-/*
- * @param     string    ASCII to dump to stdout
- *
- * @return    none
- */
-func printf(ascii string) {
-
-	// Input validation
-	if len(ascii) < 1 {
-		return
-	}
-
-	// Attempt to print the content to stdout
-	fmt.Printf(ascii + "\n")
-}
-
 //! Wrapper to give a log-like appearance to stdout.
 /*
  * @param     string    ASCII to dump to stdout
@@ -70,7 +36,7 @@ func stdlog(ascii string) {
 	currentTime := time.Now().String()
 
 	// Append the timestamp to the string message.
-	printf("[" + currentTime + "] " + ascii)
+	fmt.Printf("[" + currentTime + "] " + ascii + "\n")
 }
 
 //! Function to print out debug messages
@@ -95,7 +61,7 @@ func debugf(ascii string) {
 	currentTime := time.Now().String()
 
 	// Append the timestamp to the string message.
-	printf("[" + currentTime + "] DEBUG - " + ascii)
+	fmt.Printf("[" + currentTime + "] DEBUG - " + ascii + "\n")
 }
 
 //! Determine if a given directory location actually exists.

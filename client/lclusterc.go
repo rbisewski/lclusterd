@@ -118,32 +118,35 @@ func checkJobOnServer(uuid int64) int {
 	}
 
 	// If an internal server-side error has occurred...
-	if response.Rc == lcfg.CjrCorruptedServerInput {
+        switch response.Rc {
+
+            // Corrupted server / input.
+            case lcfg.CjrCorruptedServerInput:
 		fmt.Printf("An internal server-side error has occurred.\n")
 		return 1
 
-		// Unknown job state
-	} else if response.Rc == lcfg.CjrUnknown {
+            // Unknown job status.
+            case lcfg.CjrUnknown:
 		fmt.Printf("The job %d appears to have an unknown " +
 			   "status.\nConsider contacting the server " +
                            "operator.\n", uuid)
 		return 0
 
-		// Job does not exist
-	} else if response.Rc == lcfg.CjrProcessNotExist {
+            // Process does not exist.
+            case lcfg.CjrProcessNotExist:
 		fmt.Printf("The job %d is not present.\n", uuid)
 		return 0
 
-		// Job is queued
-	} else if response.Rc == lcfg.CjrProcessQueued {
+            // Process is queued.
+            case lcfg.CjrProcessQueued:
 		fmt.Printf("The job %d is queued.\n", uuid)
 		return 0
 
-		// Job is currently running
-	} else if response.Rc == lcfg.CjrProcessActive {
+	    // Job is currently running
+            case lcfg.CjrProcessActive:
 		fmt.Printf("The job %d is currently active.\n", uuid)
 		return 0
-	}
+        }
 
 	// otherwise if none of the above happened, print out a message
 	// stating this is unknown, with the response code
@@ -168,29 +171,24 @@ func removeJobFromServer(uuid int64) int {
 	}
 
         // Tell the server the Uuid of the job to stop.
-        response, err := libclient.HaveClientStopJobOnServer(uuid)
+        response, _ := libclient.HaveClientStopJobOnServer(uuid)
 
-	// check the return code from the StopJobResponse object, if it -1 then
-	// an error has occurred.
-	if err != nil || response.Rc == lcfg.SjrFailure {
+        // Handle the different response codes.
+        switch response.Rc {
+
+            case lcfg.SjrFailure:
 		fmt.Printf("Server has responded with the following error: \n%s\n",
                   response.Error)
 		return 1
-	}
 
-	// with a return code of `1` then the process could not be found, but
-	// the server otherwise experienced no error while processing the
-	// request
-	if response.Rc == lcfg.SjrDoesNotExist {
+            case lcfg.SjrDoesNotExist:
                 fmt.Printf("No such process exists with given uuid: %d\n", uuid)
 		return 0
-	}
 
-	// Since this has obtained a response, go ahead and return the result
-	if response.Rc == lcfg.SjrSuccess {
+            case lcfg.SjrSuccess:
 		fmt.Printf("Successfully removed job %d\n", uuid)
 		return 0
-	}
+        }
 
 	// otherwise if none of the above happened, print out a message
 	// stating this is unknown, with the response code

@@ -6,73 +6,76 @@
 
 package lcfg
 
-// If this is enabled, print debug messages.
-const DebugMode = true
+const (
 
-// Location of the etcd binary, as a POSIX dir path.
-const EtcdBinaryPath = "/usr/bin/etcd"
+      // If this is enabled, print debug messages.
+      DebugMode = true
 
-// Storage location of the etcd server data dir; in the function
-// "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
-// timestamp is appended to the end of this path so as to keep each server
-// separate.
-const EtcdDataDir = "/tmp/etcd_"
+      // Location of the etcd binary, as a POSIX dir path.
+      EtcdBinaryPath = "/usr/bin/etcd"
 
-// According to the etcd documentation, the clients listen on 2379, while
-// servers listen on 2380.
-const EtcdClientPort = ":2379"
-const EtcdServerPort = ":2380"
+      // Storage location of the etcd server data dir; in the function
+      // "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
+      // timestamp is appended to the end of this path so as to keep each server
+      // separate.
+      EtcdDataDir = "/tmp/etcd_"
 
-// IPv4 address of the gRPC server.
-const GrpcServerAddr = "localhost"
+      // According to the etcd documentation, the clients listen on 2379, while
+      // servers listen on 2380.
+      EtcdClientPort = ":2379"
+      EtcdServerPort = ":2380"
 
-// High number port for use by the gRPC server.
-const GrpcPort = ":64051"
+      // IPv4 address of the gRPC server.
+      GrpcServerAddr = "localhost"
 
-// Etcd grace period, in seconds.
-const EtcdGracePeriod = 3
+      // High number port for use by the gRPC server.
+      GrpcPort = ":64051"
 
-// Prefered command shell.
-const Sh = "/bin/bash"
+      // Etcd grace period, in seconds.
+      EtcdGracePeriod = 3
 
-// Variables needed by etcd to store values.
-const Nodes_dir = "/nodes"
-const Processes_dir = "/processes"
-const Jobs_dir = "/jobs"
-const Queue_dir = "/queue"
-const Failed_nodes_dir = "/failed_nodes"
-const Warned_jobs_dir = "/warned_jobs"
+      // Prefered command shell.
+      Sh = "/bin/bash"
 
-// Location to hold which node is currently ready, aka 'primed'.
-const Primed = "/primed"
+      // Variables needed by etcd to store values.
+      Nodes_dir = "/nodes"
+      Processes_dir = "/processes"
+      Jobs_dir = "/jobs"
+      Queue_dir = "/queue"
+      Failed_nodes_dir = "/failed_nodes"
+      Warned_jobs_dir = "/warned_jobs"
 
-// TTL lock values, in seconds.
-const PrimedTTL = 4
-const NlistTTL = 4
+      // Location to hold which node is currently ready, aka 'primed'.
+      Primed = "/primed"
 
-// CheckJobResponse return code constants.
-//
-// -1 --> failure, due to corrupted server or input
-//  0 --> unknown job status
-//  1 --> process does not exist
-//  2 --> process is queued
-//  3 --> process is active on a node
-//
-const CjrCorruptedServerInput = -1
-const CjrUnknown = 0
-const CjrProcessNotExist = 1
-const CjrProcessQueued = 2
-const CjrProcessActive = 3
+      // TTL lock values, in seconds.
+      PrimedTTL = 4
+      NlistTTL = 4
 
-// StopJobResponse return code constants.
-//
-// -1 --> failure, due to corrupted server or input
-//  0 --> success
-//  1 --> process does not exist
-//
-const SjrFailure = -1
-const SjrSuccess = 0
-const SjrDoesNotExist = 1
+      // CheckJobResponse return code.
+      //
+      // -1 --> failure, due to corrupted server or input
+      //  0 --> unknown job status
+      //  1 --> process does not exist
+      //  2 --> process is queued
+      //  3 --> process is active on a node
+      //
+      CjrCorruptedServerInput = -1
+      CjrUnknown = 0
+      CjrProcessNotExist = 1
+      CjrProcessQueued = 2
+      CjrProcessActive = 3
+
+      // StopJobResponse return code.
+      //
+      // -1 --> failure, due to corrupted server or input
+      //  0 --> success
+      //  1 --> process does not exist
+      //
+      SjrFailure = -1
+      SjrSuccess = 0
+      SjrDoesNotExist = 1
+)
 
 /* --------------------------------------------------
  * Capabilities the libcontainer instances will need.

@@ -2,8 +2,6 @@
  * File: client/main.go
  *
  * Description: Contains the lcluster client code.
- *
- * TODO: removejob is broken, others funcs are unimplemented
  */
 
 package main
@@ -22,6 +20,38 @@ import (
 var addjob string
 var checkjob string
 var removejob string
+
+//! The client main function.
+/*
+ * @return    none
+ */
+func main() {
+
+	// Parse the given argument flags.
+	flag.Parse()
+
+	// If the add job flag was passed...
+	if len(addjob) > 0 {
+		addJobToServer(addjob)
+		return
+	}
+
+	// If the check job flag was passed...
+	if len(checkjob) > 0 {
+		checkJobOnServer(checkjob)
+		return
+	}
+
+	// Safety check, ensure that remove job was given a value of 1 or
+	// higher.
+	if len(removejob) > 0 {
+		removeJobFromServer(removejob)
+		return
+	}
+
+	// Otherwise just print the usage information
+	flag.Usage()
+}
 
 // Initialize the flags beforehand.
 func init() {
@@ -292,33 +322,3 @@ func removeJobFromServer(uuid string) {
 	fmt.Printf("Consider contacting the server operator.\n")
 }
 
-//
-// Main
-//
-func main() {
-
-	// Parse the given argument flags.
-	flag.Parse()
-
-	// If the add job flag was passed...
-	if len(addjob) > 0 {
-		addJobToServer(addjob)
-		return
-	}
-
-	// If the check job flag was passed...
-	if len(checkjob) > 0 {
-		checkJobOnServer(checkjob)
-		return
-	}
-
-	// Safety check, ensure that remove job was given a value of 1 or
-	// higher.
-	if len(removejob) > 0 {
-		removeJobFromServer(removejob)
-		return
-	}
-
-	// Otherwise just print the usage information
-	flag.Usage()
-}

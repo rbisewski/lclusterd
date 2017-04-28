@@ -7,7 +7,7 @@
 package libetcd
 
 import (
-        "../../lcfg"
+	"../../lcfg"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"syscall"
 )

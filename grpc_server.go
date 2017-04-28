@@ -7,7 +7,7 @@
 package main
 
 import (
-        "./lcfg"
+	"./lcfg"
 	pb "./lclusterpb"
 	grpc "google.golang.org/grpc"
 	"net"
@@ -43,6 +43,6 @@ func startServerInstanceOfGRPC() error {
 	// Set the server to serve on the port that listener is using
 	remoteProcessCallServer.Serve(listener)
 
-        // Everything worked out fine, so pass nil
-        return nil
+	// Everything worked out fine, so pass nil
+	return nil
 }

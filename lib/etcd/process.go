@@ -6,11 +6,11 @@
 package libetcd
 
 import (
+	"github.com/opencontainers/runc/libcontainer"
+	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 	"os"
 	"path/filepath"
 	"runtime"
-	"github.com/opencontainers/runc/libcontainer"
-	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 )
 
 // The process definition.
@@ -31,9 +31,9 @@ type Process struct {
 func init() {
 
 	//
-        // NOTE: this function was adapted from the libcontainer docs:
-        //
-        // github.com/opencontainers/runc/blob/master/libcontainer/README.md
+	// NOTE: this function was adapted from the libcontainer docs:
+	//
+	// github.com/opencontainers/runc/blob/master/libcontainer/README.md
 	//
 
 	// Because containers are spawned in a two step process you will need
@@ -68,7 +68,7 @@ func (inst *EtcdInstance) StartProcess(j Job) (p Process, err error) {
 
 	// Spawn a containerizer.
 	containerizer, err := libcontainer.New(inst.rootfs,
-          libcontainer.Cgroupfs)
+		libcontainer.Cgroupfs)
 
 	// check if an error occurred
 	if err != nil {
@@ -135,9 +135,9 @@ func (inst *EtcdInstance) StopProcess(p Process) error {
 	// safety check, ensure this didn't fail
 	if err != nil {
 
-                // Since attempting to interrupt the process failed, have
-                // the OS kill it instead.
-                p.Proc.Signal(os.Kill)
+		// Since attempting to interrupt the process failed, have
+		// the OS kill it instead.
+		p.Proc.Signal(os.Kill)
 
 		// as the container is still running, attempt to free memory
 		p.container.Destroy()

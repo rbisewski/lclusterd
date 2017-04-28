@@ -7,8 +7,8 @@
 package libetcd
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 )
 
 // The element definition, which are individuals in the queue.
@@ -38,23 +38,23 @@ func (inst *EtcdInstance) syncScheduler(hid string, nodes []*Node) error {
 	// Append each of the current nodes.
 	for _, n := range nodes {
 		inst.scheduler.Queue = append(inst.scheduler.Queue,
-                  &Element{node: n})
+			&Element{node: n})
 	}
 
-        // Attempt to grab the host name.
-        hostname, err := os.Hostname()
+	// Attempt to grab the host name.
+	hostname, err := os.Hostname()
 
-        // if an error occurred, pass it back
-        if err != nil {
-            return err
-        }
+	// if an error occurred, pass it back
+	if err != nil {
+		return err
+	}
 
 	// Mention that the scheduler has began.
 	stdlog("Scheduler sync'd with NodeManager on " + hostname)
 	debugf("Primed node uuid: " + hid)
 
-        // pass back a nil since this was fine
-        return nil
+	// pass back a nil since this was fine
+	return nil
 }
 
 //! Schedule a job on the first available node.

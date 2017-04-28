@@ -7,10 +7,10 @@
 package main
 
 import (
-    "flag"
-    "fmt"
-    libetcd "./lib/etcd"
-    "os"
+	libetcd "./lib/etcd"
+	"flag"
+	"fmt"
+	"os"
 )
 
 /*
@@ -77,14 +77,14 @@ func main() {
 	// safety check, ensure that the background etcd service has actually
 	// started
 	if err != nil {
-                fmt.Printf(err.Error())
+		fmt.Printf(err.Error())
 		fmt.Printf("The background etcd service could not be started!")
 		fmt.Printf("Ensure that some other instance of the service is not " +
 			"already running and in use by another process")
 		return
 	}
 
-        // Otherwise the etcd service started correctly.
+	// Otherwise the etcd service started correctly.
 	fmt.Printf(" ")
 	stdlog("Background etcd service started successfully.")
 
@@ -106,12 +106,12 @@ func main() {
 	// Print out some informative information about how the rootfs dir.
 	stdlog("Rootfs Location: " + rootfs)
 
-        // Grab the hostname, if an error occurs, end this here.
-        hostname, err := os.Hostname()
-        if err != nil {
-            stdlog(err.Error())
-            return
-        }
+	// Grab the hostname, if an error occurs, end this here.
+	hostname, err := os.Hostname()
+	if err != nil {
+		stdlog(err.Error())
+		return
+	}
 
 	// Go ahead and start an etcd server instance.
 	etcd_server_inst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
@@ -143,13 +143,13 @@ func main() {
 
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.
-        err = startServerInstanceOfGRPC()
+	err = startServerInstanceOfGRPC()
 
-        // if an error, print it out
-        if err != nil {
-                fmt.Printf(err.Error())
+	// if an error, print it out
+	if err != nil {
+		fmt.Printf(err.Error())
 		fmt.Printf("Error: Unable to start gRPC server on the requested port!")
-        }
+	}
 }
 
 // Initialize the arg flags.

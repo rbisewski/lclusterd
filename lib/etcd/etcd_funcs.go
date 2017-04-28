@@ -7,16 +7,16 @@
 package libetcd
 
 import (
+	"../../lcfg"
+	pb "../../lclusterpb"
 	"encoding/json"
-        "fmt"
-        "path"
-        "../../lcfg"
-        pb "../../lclusterpb"
+	"fmt"
 	clientv3 "github.com/coreos/etcd/clientv3"
-        "github.com/coreos/etcd/mvcc/mvccpb"
-        "golang.org/x/net/context"
-	"os/exec"
+	"github.com/coreos/etcd/mvcc/mvccpb"
+	"golang.org/x/net/context"
 	"os"
+	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -31,16 +31,16 @@ type EtcdInstance struct {
 	// Internal pointer to the server itself.
 	Internal *clientv3.Client
 
-        // Rootfs path, as string
-        rootfs string
+	// Rootfs path, as string
+	rootfs string
 
 	// Pointer to nodes.
 	node *Node
 
-        scheduler *Scheduler
+	scheduler *Scheduler
 
-        // List of current processes.
-        ProcessesList map[int64]*Process
+	// List of current processes.
+	ProcessesList map[int64]*Process
 }
 
 // The node definition.
@@ -110,7 +110,7 @@ func StartEtcdServerBackgroundProcess(namespace string) error {
  *          error           message of the error, nil if none
  */
 func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
-  err error) {
+	err error) {
 
 	// Make a client configuration for use with generating the etcd client
 	// instance later on...
@@ -129,11 +129,11 @@ func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
 			err.Error())
 	}
 
-        // grab the hostname, if an error occurs pass it back
+	// grab the hostname, if an error occurs pass it back
 	hostname, err := os.Hostname()
-        if err != nil {
-            return nil, err
-        }
+	if err != nil {
+		return nil, err
+	}
 
 	// Assign the details of the new node as per...
 	//
@@ -148,12 +148,12 @@ func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
 		HostID:   "n_" + spawnUuid(16),
 	}
 
-        // Assign a scheduler object.
-        newScheduler := &Scheduler{}
+	// Assign a scheduler object.
+	newScheduler := &Scheduler{}
 
 	// Create an etcdInstance using the new Internal client.
-        inst = &EtcdInstance{Internal: newlyGeneratedClient, rootfs: rootfs,
-          node: node, scheduler: newScheduler}
+	inst = &EtcdInstance{Internal: newlyGeneratedClient, rootfs: rootfs,
+		node: node, scheduler: newScheduler}
 
 	// Return the completed etcdInstance.
 	return inst, nil
@@ -170,8 +170,8 @@ func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) error {
 	// Keep the entry alive.
 	_, err := inst.Internal.KeepAliveOnce(context.TODO(), leaseID)
 
-        // return the error, if any
-        return err
+	// return the error, if any
+	return err
 }
 
 //! Function to keep etcd key values alive.
@@ -183,17 +183,17 @@ func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) error {
 func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 
 	// Set a duration time based on the time-to-live, this will be a
-        // sort of 'duration' time.
+	// sort of 'duration' time.
 	sleep_duration := time.Duration(lease.TTL / 2)
 	for {
 
 		// update the time-to-live
-                err := inst.updateTTL(lease.ID)
+		err := inst.updateTTL(lease.ID)
 
-                // if unable to update the TTL, break from here
-                if err != nil {
-                    break
-                }
+		// if unable to update the TTL, break from here
+		if err != nil {
+			break
+		}
 
 		// then go back to sleep
 		time.Sleep(time.Second * sleep_duration)
@@ -254,8 +254,8 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	// if the node got this far, close the notification channel
 	primedNotificationChan <- false
 
-        // success
-        return nil
+	// success
+	return nil
 }
 
 //! Listens on the notification channel until the current primed node
@@ -288,14 +288,14 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 			// vie for prime lock
 			stdlog("watchUntilPrimed(): main node no longer primed, " +
 				"attempting to prime this node...")
-                        err := inst.primedLock(primedNotificationChan)
+			err := inst.primedLock(primedNotificationChan)
 
-                        // if an error occurs, print it our
-                        if err != nil {
-                            stdlog(err.Error() + "\n")
-                        }
+			// if an error occurs, print it our
+			if err != nil {
+				stdlog(err.Error() + "\n")
+			}
 
-                        // end the loop since this is completed
+			// end the loop since this is completed
 			return
 		}
 	}
@@ -361,15 +361,15 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// with all of the pieces in place, this syncs with the scheduler,
 		// and the entire setup is primed for new jobs
-                err = inst.syncScheduler(inst.node.HostID, nodes)
+		err = inst.syncScheduler(inst.node.HostID, nodes)
 
-                // if an error occurs, print it out and skip to the next loop
-                if err != nil {
-                    stdlog(err.Error())
-                    continue
-                }
+		// if an error occurs, print it out and skip to the next loop
+		if err != nil {
+			stdlog(err.Error())
+			continue
+		}
 
-                // else watch the job queue
+		// else watch the job queue
 		go inst.watchGeneralJobQueue()
 	}
 }
@@ -385,7 +385,7 @@ func (inst *EtcdInstance) initializeJobQueue() error {
 
 	// Grab the context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Ensure the queue dirs exist, and if not, create them.
 	_, err := kvc.Txn(ctx).
@@ -412,7 +412,7 @@ func (inst *EtcdInstance) initializeGlobalJobID() error {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Check if a jobs dir exists, else create one.
 	_, err := kvc.Txn(ctx).
@@ -439,7 +439,7 @@ func (inst *EtcdInstance) initializeProcessStorage() error {
 
 	// grab the current context
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// check if the processes location exists, and if not, creates it
 	_, err := kvc.Txn(ctx).
@@ -509,7 +509,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// insert the key into etcd
 	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Nodes_dir, inst.node.HostID),
@@ -529,7 +529,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 
 	// grab the current context
 	ctx, cancel = context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// add the context into the k-v storage as well
 	_, err = inst.Internal.Put(ctx, jobQueue, "")
@@ -574,7 +574,7 @@ func (inst *EtcdInstance) storeProcess(p Process) error {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// insert a key-value into etcd
 	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Processes_dir,
@@ -643,7 +643,7 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 			}
 
 			// Using the job data, attempt to start a process
-                        // on the node.
+			// on the node.
 			p, err := inst.StartProcess(j)
 
 			// print out the error message, if any
@@ -738,7 +738,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Grab the list of queued jobs.
 	response, err := inst.Internal.Get(ctx, lcfg.Queue_dir)
@@ -791,7 +791,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// Add task to the general queue
 	ctx, cancel = context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// attempt to insert it into etcd
 	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Queue_dir,
@@ -848,7 +848,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Get a response from the primed node.
 	response, err := inst.Internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
@@ -909,7 +909,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 
 	// grab the current context, need it to hand off the job to the node
 	ctx, cancel = context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Insert the job into the job queue of the node.
 	responseToJobAddToNode, err := inst.Internal.Put(ctx,
@@ -959,7 +959,7 @@ func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Use the host id to determine which node.
 	response, err := inst.Internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
@@ -1015,11 +1015,11 @@ func (inst *EtcdInstance) putNode(node *Node) error {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// attempt to insert the value into etcd
 	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Nodes_dir,
-                node.HostID), string(mresult))
+		node.HostID), string(mresult))
 
 	// cancel the current context
 	cancel()
@@ -1042,12 +1042,12 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.EtcdGracePeriodSec * time.Second)
+		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Obtain the nodes dir contents.
 	response, err := inst.Internal.Get(ctx, lcfg.Nodes_dir,
-                clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey,
-                clientv3.SortAscend))
+		clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey,
+			clientv3.SortAscend))
 
 	// cancel the current context
 	cancel()
@@ -1062,7 +1062,7 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 	for _, entry := range response.Kvs {
 
 		// Parse the entry into pieces, useful for checking the
-                // hostname.
+		// hostname.
 		pieces := strings.Split(string(entry.Key), "/")
 
 		// node data are stored in the form...

@@ -7,10 +7,10 @@
 package libetcd
 
 import (
+	"../../lcfg"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-        "../../lcfg"
 	"strings"
 	"time"
 )

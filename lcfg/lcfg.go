@@ -8,73 +8,73 @@ package lcfg
 
 const (
 
-      // If this is enabled, print debug messages.
-      DebugMode = true
+	// If this is enabled, print debug messages.
+	DebugMode = true
 
-      // Location of the etcd binary, as a POSIX dir path.
-      EtcdBinaryPath = "/usr/bin/etcd"
+	// Location of the etcd binary, as a POSIX dir path.
+	EtcdBinaryPath = "/usr/bin/etcd"
 
-      // Storage location of the etcd server data dir; in the function
-      // "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
-      // timestamp is appended to the end of this path so as to keep each server
-      // separate.
-      EtcdDataDir = "/tmp/etcd_"
+	// Storage location of the etcd server data dir; in the function
+	// "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
+	// timestamp is appended to the end of this path so as to keep each server
+	// separate.
+	EtcdDataDir = "/tmp/etcd_"
 
-      // According to the etcd documentation, the clients listen on 2379, while
-      // servers listen on 2380.
-      EtcdClientPort = ":2379"
-      EtcdServerPort = ":2380"
+	// According to the etcd documentation, the clients listen on 2379, while
+	// servers listen on 2380.
+	EtcdClientPort = ":2379"
+	EtcdServerPort = ":2380"
 
-      // IPv4 address of the gRPC server.
-      GrpcServerAddr = "localhost"
+	// IPv4 address of the gRPC server.
+	GrpcServerAddr = "localhost"
 
-      // High number port for use by the gRPC server.
-      GrpcPort = ":64051"
+	// High number port for use by the gRPC server.
+	GrpcPort = ":64051"
 
-      // Etcd grace period, in seconds.
-      EtcdGracePeriodSec = 3
+	// Etcd grace period, in seconds.
+	EtcdGracePeriodSec = 3
 
-      // Prefered command shell.
-      Sh = "/bin/bash"
+	// Prefered command shell.
+	Sh = "/bin/bash"
 
-      // Variables needed by etcd to store values.
-      Nodes_dir = "/nodes"
-      Processes_dir = "/processes"
-      Jobs_dir = "/jobs"
-      Queue_dir = "/queue"
-      Failed_nodes_dir = "/failed_nodes"
-      Warned_jobs_dir = "/warned_jobs"
+	// Variables needed by etcd to store values.
+	Nodes_dir        = "/nodes"
+	Processes_dir    = "/processes"
+	Jobs_dir         = "/jobs"
+	Queue_dir        = "/queue"
+	Failed_nodes_dir = "/failed_nodes"
+	Warned_jobs_dir  = "/warned_jobs"
 
-      // Location to hold which node is currently ready, aka 'primed'.
-      Primed = "/primed"
+	// Location to hold which node is currently ready, aka 'primed'.
+	Primed = "/primed"
 
-      // TTL lock values, in seconds.
-      PrimedTTL = 4
-      NlistTTL = 4
+	// TTL lock values, in seconds.
+	PrimedTTL = 4
+	NlistTTL  = 4
 
-      // CheckJobResponse return code.
-      //
-      // -1 --> failure, due to corrupted server or input
-      //  0 --> unknown job status
-      //  1 --> process does not exist
-      //  2 --> process is queued
-      //  3 --> process is active on a node
-      //
-      CjrCorruptedServerInput = -1
-      CjrUnknown = 0
-      CjrProcessNotExist = 1
-      CjrProcessQueued = 2
-      CjrProcessActive = 3
+	// CheckJobResponse return code.
+	//
+	// -1 --> failure, due to corrupted server or input
+	//  0 --> unknown job status
+	//  1 --> process does not exist
+	//  2 --> process is queued
+	//  3 --> process is active on a node
+	//
+	CjrCorruptedServerInput = -1
+	CjrUnknown              = 0
+	CjrProcessNotExist      = 1
+	CjrProcessQueued        = 2
+	CjrProcessActive        = 3
 
-      // StopJobResponse return code.
-      //
-      // -1 --> failure, due to corrupted server or input
-      //  0 --> success
-      //  1 --> process does not exist
-      //
-      SjrFailure = -1
-      SjrSuccess = 0
-      SjrDoesNotExist = 1
+	// StopJobResponse return code.
+	//
+	// -1 --> failure, due to corrupted server or input
+	//  0 --> success
+	//  1 --> process does not exist
+	//
+	SjrFailure      = -1
+	SjrSuccess      = 0
+	SjrDoesNotExist = 1
 )
 
 /* --------------------------------------------------

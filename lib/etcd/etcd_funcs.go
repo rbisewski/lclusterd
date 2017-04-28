@@ -558,11 +558,11 @@ func (inst *EtcdInstance) addToNodesList() error {
  *
  * @result   error      error message, if any
  */
-func (inst *EtcdInstance) storeProcess(p *Process) error {
+func (inst *EtcdInstance) storeProcess(p Process) error {
 
 	// utilize the Uuid as the hash key; add the process to the list of
 	// processes
-	inst.ProcessesList[p.Uuid] = p
+	inst.ProcessesList[p.Uuid] = &p
 
 	// Attempt to marshell a node.
 	mresult, err := json.Marshal(inst.node)

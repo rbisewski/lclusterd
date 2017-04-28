@@ -6,7 +6,6 @@
 package libetcd
 
 import (
-        "fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -65,7 +64,7 @@ func init() {
  * @return   Process    newly generated process
  * @return   error      error message, if any
  */
-func (inst *EtcdInstance) StartProcess(j Job) (p *Process, err error) {
+func (inst *EtcdInstance) StartProcess(j Job) (p Process, err error) {
 
 	// Spawn a containerizer.
 	containerizer, err := libcontainer.New(inst.rootfs,
@@ -73,7 +72,7 @@ func (inst *EtcdInstance) StartProcess(j Job) (p *Process, err error) {
 
 	// check if an error occurred
 	if err != nil {
-		return nil, err
+		return Process{}, err
 	}
 
 	// Make a crypto safe pseudo random string as the id.
@@ -90,7 +89,7 @@ func (inst *EtcdInstance) StartProcess(j Job) (p *Process, err error) {
 
 	// check if any error occurred
 	if err != nil {
-		return nil, err
+		return Process{}, err
 	}
 
 	// Assemble a new process.
@@ -109,11 +108,11 @@ func (inst *EtcdInstance) StartProcess(j Job) (p *Process, err error) {
 	// event that this is no longer able to continue
 	if err != nil {
 		container.Destroy()
-		return nil, err
+		return Process{}, err
 	}
 
 	// Assemble a reference to the newly generated process.
-	return &Process{Uuid: j.Pid, container: container, Proc: process}, nil
+	return Process{Uuid: j.Pid, container: container, Proc: process}, nil
 }
 
 //! Function to stop a process, as per the global rootfs.
@@ -122,12 +121,7 @@ func (inst *EtcdInstance) StartProcess(j Job) (p *Process, err error) {
  *
  * @return   error      error message, if any
  */
-func (inst *EtcdInstance) StopProcess(p *Process) error {
-
-	// input validation
-	if p == nil {
-		return fmt.Errorf("StopProcess() --> invalid input\n")
-	}
+func (inst *EtcdInstance) StopProcess(p Process) error {
 
 	// safety check, ensure this is actually a process
 	if p.Proc == nil {

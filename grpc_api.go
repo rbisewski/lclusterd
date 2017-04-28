@@ -145,7 +145,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	}
 
 	// attempt to stop the given process
-	err = etcdServer.StopProcess(process)
+	err = etcdServer.StopProcess(*process)
 
 	// if any error occurred while halting the process, pass it back
 	if err != nil {

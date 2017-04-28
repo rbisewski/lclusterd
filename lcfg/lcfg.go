@@ -32,7 +32,7 @@ const (
       GrpcPort = ":64051"
 
       // Etcd grace period, in seconds.
-      EtcdGracePeriod = 3
+      EtcdGracePeriodSec = 3
 
       // Prefered command shell.
       Sh = "/bin/bash"

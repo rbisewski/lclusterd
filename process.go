@@ -134,11 +134,15 @@ func StopProcess(p *Process) error {
 		return nil
 	}
 
-	// Have the OS send the kill signal to the process.
-	err := p.proc.Signal(os.Kill)
+	// Have the OS send an interrupt signal to the process.
+	err := p.proc.Signal(os.Interrupt)
 
 	// safety check, ensure this didn't fail
 	if err != nil {
+
+                // Since attempting to interrupt the process failed, have
+                // the OS kill it instead.
+                p.proc.Signal(os.Kill)
 
 		// as the container is still running, attempt to free memory
 		p.container.Destroy()

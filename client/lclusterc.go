@@ -11,7 +11,6 @@ import (
         libclient "../lib/client"
 	"flag"
 	"fmt"
-	"strconv"
 )
 
 // Variables to hold the result of argument flags.
@@ -86,15 +85,15 @@ func addJobToServer(cmd string) {
 
 	// Safety check, ensure that no error has occurred.
 	if err != nil || response.GetPid() < 0 {
-		fmt.Printf("\nError: Unable to add job to queue!\n")
-		fmt.Printf(err.Error() + "\n")
+		fmt.Printf("\nError: Unable to add job to queue!\n" +
+                  err.Error() + "\n")
 		return
 	}
 
 	// Since the job was started properly, go ahead and print out a message
 	// telling the end-user the uuid of the new job.
-	fmt.Printf("The requested job has been added to queue, has pid of " +
-		strconv.FormatInt(response.GetPid(), 10) + "\n")
+	fmt.Printf("The requested job has been added to queue, has pid " +
+          "of %d\n", response.GetPid())
 }
 
 //! Status of a job from the server.
@@ -121,32 +120,32 @@ func checkJobOnServer(uuid int64) {
 
 		// Unknown job state
 	} else if response.Rc == lcfg.CjrUnknown {
-		fmt.Printf("The job appears to have an unknown " +
+		fmt.Printf("The job %d appears to have an unknown " +
 			   "status.\nConsider contacting the server " +
-                           "operator.\n")
+                           "operator.\n", uuid)
 		return
 
 		// Job does not exist
 	} else if response.Rc == lcfg.CjrProcessNotExist {
-		fmt.Printf("The job is not present.\n")
+		fmt.Printf("The job %d is not present.\n", uuid)
 		return
 
 		// Job is queued
 	} else if response.Rc == lcfg.CjrProcessQueued {
-		fmt.Printf("The job is queued.\n")
+		fmt.Printf("The job %d is queued.\n", uuid)
 		return
 
 		// Job is currently running
 	} else if response.Rc == lcfg.CjrProcessActive {
-		fmt.Printf("The job is currently active.\n")
+		fmt.Printf("The job %d is currently active.\n", uuid)
 		return
 	}
 
 	// otherwise if none of the above happened, print out a message
 	// stating this is unknown, with the response code
-	fmt.Printf("The following undefined response code was given back: " +
-		strconv.FormatInt(response.Rc, 10) + "\n")
-	fmt.Printf("Consider contacting the server operator.\n")
+	fmt.Printf("The following undefined response code was " +
+          "given back: %d\nConsider contacting the server operator.\n",
+          response.Rc)
 }
 
 //! Remove a job from the server.
@@ -178,20 +177,19 @@ func removeJobFromServer(uuid int64) {
 	// the server otherwise experienced no error while processing the
 	// request
 	if response.Rc == lcfg.SjrDoesNotExist {
-		fmt.Printf("No such process exists with given uuid.\n")
+                fmt.Printf("No such process exists with given uuid: %d\n", uuid)
 		return
 	}
 
 	// Since this has obtained a response, go ahead and return the result
 	if response.Rc == lcfg.SjrSuccess {
-		fmt.Printf("Successfully removed job!\n")
+		fmt.Printf("Successfully removed job %d\n", uuid)
 		return
 	}
 
 	// otherwise if none of the above happened, print out a message
 	// stating this is unknown, with the response code
-	fmt.Printf("The following undefined response code was given back: " +
-		strconv.FormatInt(response.Rc, 10) + "\n")
-	fmt.Printf("Consider contacting the server operator.\n")
+	fmt.Printf("The following undefined response code was given " +
+          "back: %d\nConsider contacting the server operator.\n",
+          response.Rc)
 }
-

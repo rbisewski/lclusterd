@@ -101,7 +101,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	// since this is done, cancel the current context
 	cancel()
 
-	// if an error occurred during the, print it out
+	// If an error occurred, pass it back.
 	if err != nil {
 		return err
 	}

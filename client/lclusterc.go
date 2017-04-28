@@ -8,13 +8,10 @@ package main
 
 import (
 	"../lcfg"
-	pb "../lclusterpb"
+        libclient "../lib/client"
 	"flag"
 	"fmt"
-	"golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
 	"strconv"
-	"time"
 )
 
 // Variables to hold the result of argument flags.
@@ -84,41 +81,8 @@ func addJobToServer(cmd string) {
 		return
 	}
 
-	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
-		grpc.WithInsecure())
-
-	// Safety check, ensure no errors have occurred.
-	if err != nil {
-		fmt.Printf("addJobToServer() --> unable to connect to grpc " +
-			"server at address")
-		return
-	}
-
-	// Defer the connection for the time being, but eventually it will be
-	// closed once we've finished with it.
-	defer connection.Close()
-
-	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
-
-	// Start a new job request using the data obtained above.
-	request := &pb.StartJobRequest{
-		Path:     cmd,
-		Args:     []string{lcfg.Sh, cmd},
-		Env:      []string{"PATH=/bin"},
-		Hostname: lcfg.GrpcServerAddr,
-	}
-
-	// Grab the current background context.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
-	// Using the new job request defined above, go ahead and
-	response, err := lcluster_client.StartJob(ctx, request)
-
-	// Cancel the current context since this has either generated a
-	// response or an error.
-	cancel()
+        // Have the client connect to the server
+        response, err := libclient.HaveClientAddJobToServer(cmd)
 
 	// Safety check, ensure that no error has occurred.
 	if err != nil || response.GetPid() < 0 {
@@ -147,47 +111,8 @@ func checkJobOnServer(uuid string) {
 		return
 	}
 
-	// attempt to cast the pid into an int since that is CheckJobRequest
-	// uses as the Pid var type
-	pid, err := strconv.ParseInt(uuid, 10, 64)
-
-	// if an error occurs, print it out
-	if err != nil || pid < 1 {
-		fmt.Printf("Please enter a valid int64 value.\n")
-		return
-	}
-
-	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
-		grpc.WithInsecure())
-
-	// Safety check, ensure no errors have occurred.
-	if err != nil {
-		fmt.Printf("checkJobOnServer() --> unable to connect to grpc " +
-			"server at address")
-		return
-	}
-
-	// Defer the connection for the time being, but eventually it will be
-	// closed once we've finished with it.
-	defer connection.Close()
-
-	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
-
-	// Assemble a check job request object
-	request := &pb.CheckJobRequest{Pid: pid}
-
-	// Grab the current background context.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
-	// Using the check job request defined above, go ahead and attempt to
-	// stop the job
-	response, err := lcluster_client.CheckJob(ctx, request)
-
-	// Cancel the current context since this has either generated a
-	// response or an error.
-	cancel()
+        // Connect to the server and check if the job is still running.
+        response, err := libclient.HaveClientCheckJobOnServer(uuid)
 
 	// Safety check, ensure that no error has occurred.
 	if err != nil {
@@ -243,58 +168,12 @@ func removeJobFromServer(uuid string) {
 		return
 	}
 
-	// attempt to cast the pid into an int since that is StopJobRequest
-	// uses as the Pid var type
-	pid, err := strconv.ParseInt(uuid, 10, 64)
-
-	// if an error occurs, print it out
-	if err != nil || pid < 1 {
-		fmt.Printf("Please enter a valid int64 value.\n")
-		return
-	}
-
-	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
-		grpc.WithInsecure())
-
-	// Safety check, ensure no errors have occurred.
-	if err != nil {
-		fmt.Printf("removeJobFromServer() --> unable to connect to grpc server at address")
-		return
-	}
-
-	// Defer the connection for the time being, but eventually it will be
-	// closed once we've finished with it.
-	defer connection.Close()
-
-	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
-
-	// Assemble a stop job request object
-	request := &pb.StopJobRequest{Pid: pid}
-
-	// Grab the current background context.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
-	// Using the stop job request defined above, go ahead and attempt to
-	// stop the job
-	response, err := lcluster_client.StopJob(ctx, request)
-
-	// Cancel the current context since this has either generated a
-	// response or an error.
-	cancel()
-
-	// Safety check, ensure that no error has occurred.
-	if err != nil {
-		fmt.Printf("removeJobFromServer() --> the following error has " +
-			"occurred...\n")
-		fmt.Printf(err.Error())
-		return
-	}
+        // Tell the server the Uuid of the job to stop.
+        response, err := libclient.HaveClientStopJobOnServer(uuid)
 
 	// check the return code from the StopJobResponse object, if it -1 then
 	// an error has occurred.
-	if response.Rc == lcfg.SjrFailure {
+	if err != nil || response.Rc == lcfg.SjrFailure {
 		fmt.Printf("Server has responded with the following error:\n")
 		fmt.Printf(response.Error + "\n")
 		return
@@ -304,15 +183,13 @@ func removeJobFromServer(uuid string) {
 	// the server otherwise experienced no error while processing the
 	// request
 	if response.Rc == lcfg.SjrDoesNotExist {
-		fmt.Printf("No such process exists with Uuid: " +
-			strconv.FormatInt(pid, 10) + "\n")
+		fmt.Printf("No such process exists with Uuid: " + uuid + "\n")
 		return
 	}
 
 	// Since this has obtained a response, go ahead and return the result
 	if response.Rc == lcfg.SjrSuccess {
-		fmt.Printf("Successfully removed job of pid: " +
-			strconv.FormatInt(pid, 10) + "\n")
+		fmt.Printf("Successfully removed job of pid: " + uuid + "\n")
 		return
 	}
 

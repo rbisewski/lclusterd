@@ -34,18 +34,6 @@ var processesList map[int64]*Process
 // The global rootfs location; it gets defined via commandline argument.
 var rootfs string
 
-// Initialize the flags beforehand.
-func init() {
-
-	// Set a definition for the namespace flag.
-	flag.StringVar(&namespace, "namespace", "localhost",
-		"Hostname or IP address")
-
-	// Location of the intended rootfs to run the runc libcontainer instances.
-	flag.StringVar(&rootfs, "rootfs", "",
-		"Rootfs POSIX directory location for runc")
-}
-
 //! The program main function.
 /*
  * @return    none
@@ -152,4 +140,16 @@ func main() {
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.
 	startServerInstanceOfGRPC()
+}
+
+// Initialize the arg flags.
+func init() {
+
+	// Set a definition for the namespace flag.
+	flag.StringVar(&namespace, "namespace", "localhost",
+		"Hostname or IP address")
+
+	// Location of the intended rootfs to run the runc libcontainer instances.
+	flag.StringVar(&rootfs, "rootfs", "",
+		"Rootfs POSIX directory location for runc")
 }

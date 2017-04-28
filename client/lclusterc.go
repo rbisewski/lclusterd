@@ -7,6 +7,7 @@
 package main
 
 import (
+	"../lcfg"
 	pb "../lclusterpb"
 	"flag"
 	"fmt"
@@ -84,7 +85,7 @@ func addJobToServer(cmd string) {
 	}
 
 	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(grpcServerAddr+grpcPort,
+	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
 		grpc.WithInsecure())
 
 	// Safety check, ensure no errors have occurred.
@@ -104,9 +105,9 @@ func addJobToServer(cmd string) {
 	// Start a new job request using the data obtained above.
 	request := &pb.StartJobRequest{
 		Path:     cmd,
-		Args:     []string{sh, cmd},
+		Args:     []string{lcfg.Sh, cmd},
 		Env:      []string{"PATH=/bin"},
-		Hostname: grpcServerAddr,
+		Hostname: lcfg.GrpcServerAddr,
 	}
 
 	// Grab the current background context.
@@ -157,7 +158,7 @@ func checkJobOnServer(uuid string) {
 	}
 
 	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(grpcServerAddr+grpcPort,
+	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
 		grpc.WithInsecure())
 
 	// Safety check, ensure no errors have occurred.
@@ -195,28 +196,28 @@ func checkJobOnServer(uuid string) {
 	}
 
 	// If an internal server-side error has occurred...
-	if response.Rc == CJR_CORRUPTED_SERVER_INPUT {
+	if response.Rc == lcfg.CjrCorruptedServerInput {
 		fmt.Printf("An internal server-side error has occurred.\n")
 		return
 
 		// Unknown job state
-	} else if response.Rc == CJR_UNKNOWN {
+	} else if response.Rc == lcfg.CjrUnknown {
 		fmt.Printf("The job '" + uuid + "' appears to have an unknown " +
 			"status.\nConsider contacting the server operator.\n")
 		return
 
 		// Job does not exist
-	} else if response.Rc == CJR_PROCESS_NOT_EXIST {
+	} else if response.Rc == lcfg.CjrProcessNotExist {
 		fmt.Printf("The job '" + uuid + "' is not present.\n")
 		return
 
 		// Job is queued
-	} else if response.Rc == CJR_PROCESS_QUEUED {
+	} else if response.Rc == lcfg.CjrProcessQueued {
 		fmt.Printf("The job '" + uuid + "' is queued.\n")
 		return
 
 		// Job is currently running
-	} else if response.Rc == CJR_PROCESS_ACTIVE {
+	} else if response.Rc == lcfg.CjrProcessActive {
 		fmt.Printf("The job '" + uuid + "' is currently active.\n")
 		return
 	}
@@ -253,7 +254,7 @@ func removeJobFromServer(uuid string) {
 	}
 
 	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(grpcServerAddr+grpcPort,
+	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
 		grpc.WithInsecure())
 
 	// Safety check, ensure no errors have occurred.
@@ -293,7 +294,7 @@ func removeJobFromServer(uuid string) {
 
 	// check the return code from the StopJobResponse object, if it -1 then
 	// an error has occurred.
-	if response.Rc == SJR_FAILURE {
+	if response.Rc == lcfg.SjrFailure {
 		fmt.Printf("Server has responded with the following error:\n")
 		fmt.Printf(response.Error + "\n")
 		return
@@ -302,14 +303,14 @@ func removeJobFromServer(uuid string) {
 	// with a return code of `1` then the process could not be found, but
 	// the server otherwise experienced no error while processing the
 	// request
-	if response.Rc == SJR_DOES_NOT_EXIST {
+	if response.Rc == lcfg.SjrDoesNotExist {
 		fmt.Printf("No such process exists with Uuid: " +
 			strconv.FormatInt(pid, 10) + "\n")
 		return
 	}
 
 	// Since this has obtained a response, go ahead and return the result
-	if response.Rc == SJR_SUCCESS {
+	if response.Rc == lcfg.SjrSuccess {
 		fmt.Printf("Successfully removed job of pid: " +
 			strconv.FormatInt(pid, 10) + "\n")
 		return

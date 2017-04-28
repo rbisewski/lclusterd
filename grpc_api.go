@@ -7,6 +7,7 @@
 package main
 
 import (
+        "./lcfg"
 	pb "./lclusterpb"
 	"golang.org/x/net/context"
 	"strconv"
@@ -64,7 +65,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	}
 
 	// Obtain the response, which contains the list of queued jobs.
-	response, err := etcdServer.internal.Get(ctx, queue_dir)
+	response, err := etcdServer.internal.Get(ctx, lcfg.Queue_dir)
 
 	// if an error occurs here, pass back a return code of 0, since for
 	// whatever reason, the server is unable to query jobs at this time

@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+	"./lcfg"
 )
 
 //! Wrapper to make golang error funcs seem more C-like.
@@ -86,7 +87,7 @@ func debugf(ascii string) {
 	}
 
 	// ensure debug mode is actually on
-	if !debugMode {
+	if !lcfg.DebugMode {
 		return
 	}
 

@@ -7,6 +7,7 @@
 package main
 
 import (
+        "./lcfg"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"syscall"
 )
@@ -30,11 +31,11 @@ func generateLibcontainerConfig(container_name string,
 		Rootfs: rootfs,
 
 		Capabilities: &configs.Capabilities{
-			Bounding:    lclusterc_caps,
-			Permitted:   lclusterc_caps,
-			Inheritable: lclusterc_caps,
-			Ambient:     lclusterc_caps,
-			Effective:   lclusterc_caps,
+			Bounding:    lcfg.LclustercCaps,
+			Permitted:   lcfg.LclustercCaps,
+			Inheritable: lcfg.LclustercCaps,
+			Ambient:     lcfg.LclustercCaps,
+			Effective:   lcfg.LclustercCaps,
 		},
 
 		Namespaces: configs.Namespaces([]configs.Namespace{

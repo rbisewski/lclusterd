@@ -7,6 +7,7 @@
 package main
 
 import (
+        "./lcfg"
 	clientv3 "github.com/coreos/etcd/clientv3"
 	"os/exec"
 	"time"
@@ -44,11 +45,11 @@ func StartEtcdServerBackgroundProcess() bool {
 	//
 	// Note: this appends a 32 digit number to etcd data dir ensure the
 	// given etcd session is unique.
-	initial_advertise_peer_urls := protocol + namespace + etcdServerPort
-	listen_peer_urls := protocol + namespace + etcdServerPort
-	listen_client_urls := protocol + namespace + etcdClientPort
-	advertise_client_urls := protocol + namespace + etcdClientPort
-	data_dir_w_unique_cryptonum := etcdDataDir + spawnPseudorandomString(32)
+	initial_advertise_peer_urls := protocol + namespace + lcfg.EtcdServerPort
+	listen_peer_urls := protocol + namespace + lcfg.EtcdServerPort
+	listen_client_urls := protocol + namespace + lcfg.EtcdClientPort
+	advertise_client_urls := protocol + namespace + lcfg.EtcdClientPort
+	data_dir_w_unique_cryptonum := lcfg.EtcdDataDir + spawnPseudorandomString(32)
 
 	// Create a string array to hold all of the necessary arguments.
 	var etcdArgs = []string{
@@ -67,7 +68,7 @@ func StartEtcdServerBackgroundProcess() bool {
 	}
 
 	// Attempt to exec the command.
-	err := exec.Command(etcdBinaryPath, etcdArgs...).Start()
+	err := exec.Command(lcfg.EtcdBinaryPath, etcdArgs...).Start()
 
 	// if an error occurred, print it out and pass back a false
 	if err != nil {
@@ -101,7 +102,7 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 	// Make a client configuration for use with generating the etcd client
 	// instance later on...
 	etcdClientConfiguration := clientv3.Config{
-		Endpoints:   []string{namespace + etcdClientPort},
+		Endpoints:   []string{namespace + lcfg.EtcdClientPort},
 		DialTimeout: 5 * time.Second,
 	}
 

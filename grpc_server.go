@@ -7,6 +7,7 @@
 package main
 
 import (
+        "./lcfg"
 	pb "./lclusterpb"
 	grpc "google.golang.org/grpc"
 	"net"
@@ -26,7 +27,7 @@ type Job pb.StartJobRequest
 func startServerInstanceOfGRPC() {
 
 	// Listen the defined grpc port.
-	listener, err := net.Listen("tcp", grpcPort)
+	listener, err := net.Listen("tcp", lcfg.GrpcPort)
 
 	// Safety check, make sure an error didn't occur.
 	if err != nil {

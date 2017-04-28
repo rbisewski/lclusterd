@@ -6,7 +6,10 @@
 
 package main
 
-import "flag"
+import (
+    "./lcfg"
+    "flag"
+)
 
 /*
  * Globals
@@ -110,7 +113,7 @@ func main() {
 	stdlog("Scheduler startup on " + getHostname())
 
 	// Go ahead and start an etcd server instance.
-	etcd_server_inst, err := CreateEtcdInstance(namespace + etcdClientPort)
+	etcd_server_inst, err := CreateEtcdInstance(namespace + lcfg.EtcdClientPort)
 
 	// Safety check, ensure that no errors have occurred during startup of
 	// the EtcdServer. If it fails to start, go ahead and terminate the

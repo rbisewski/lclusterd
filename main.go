@@ -114,8 +114,15 @@ func main() {
         // program to start using the Scheduler.
 	scheduler = &Scheduler{}
 
+        // grab the hostname, if an error occurs, end this here
+        hostname, err := getHostname()
+        if err != nil {
+            stdlog(err.Error())
+            return
+        }
+
 	// Mention that the global scheduler has now started.
-	stdlog("Scheduler startup on " + getHostname())
+	stdlog("Scheduler startup on " + hostname)
 
 	// Go ahead and start an etcd server instance.
 	etcd_server_inst, err := CreateEtcdInstance(namespace + lcfg.EtcdClientPort)
@@ -136,7 +143,7 @@ func main() {
 	etcdServer = etcd_server_inst
 
 	// Mention that the etcd server has now started.
-	stdlog("Etcd server startup on " + getHostname())
+	stdlog("Etcd server startup on " + hostname)
 
 	// Have the etcd server initialize the nodes, with a "primed" node that
 	// functions as a sort of "manager" for the other nodes

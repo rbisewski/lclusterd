@@ -23,9 +23,9 @@ type Scheduler struct {
  * @param    string    primed node uuid
  * @param    *Node[]   array of node pointers
  *
- * @return   none
+ * @return   error     error message, if any
  */
-func syncScheduler(hid string, nodes []*Node) {
+func syncScheduler(hid string, nodes []*Node) error {
 
 	// Assign memory for the scheduler queue.
 	scheduler.Queue = make([]*Element, 0)
@@ -35,9 +35,20 @@ func syncScheduler(hid string, nodes []*Node) {
 		scheduler.Queue = append(scheduler.Queue, &Element{node: n})
 	}
 
+        // Attempt to grab the host name.
+        hostname, err := getHostname()
+
+        // if an error occurred, pass it back
+        if err != nil {
+            return err
+        }
+
 	// Mention that the scheduler has began.
-	stdlog("Scheduler sync'd with NodeManager on " + getHostname())
+	stdlog("Scheduler sync'd with NodeManager on " + hostname)
 	debugf("Primed node uuid: " + hid)
+
+        // pass back a nil since this was fine
+        return nil
 }
 
 //! Schedule a job on the first available node.

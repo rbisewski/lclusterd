@@ -106,6 +106,12 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 			err.Error())
 	}
 
+        // grab the hostname, if an error occurs pass it back
+        hostname, err := getHostname()
+        if err != nil {
+            return nil, err
+        }
+
 	// Assign the details of the new node as per...
 	//
 	// HostName: hostname of the server
@@ -115,7 +121,7 @@ func CreateEtcdInstance(socket string) (inst *EtcdInstance, err error) {
 	// digits.
 	//
 	node := &Node{
-		HostName: getHostname(),
+		HostName: hostname,
 		HostID:   "n_" + spawnPseudorandomString(16),
 	}
 

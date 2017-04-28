@@ -230,7 +230,15 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// with all of the pieces in place, this syncs with the scheduler,
 		// and the entire setup is primed for new jobs
-		syncScheduler(inst.node.HostID, nodes)
+                err = syncScheduler(inst.node.HostID, nodes)
+
+                // if an error occurs, print it out and skip to the next loop
+                if err != nil {
+                    stdlog(err.Error())
+                    continue
+                }
+
+                // else watch the job queue
 		go inst.watchGeneralJobQueue()
 	}
 }

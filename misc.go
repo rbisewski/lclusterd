@@ -127,18 +127,13 @@ func directoryExists(path string) bool {
 /*
  * @return    string    hostname as a string
  */
-func getHostname() string {
+func getHostname() (string, error) {
 
 	// Attempt to grab the hostname from the OS.
 	hostname, err := os.Hostname()
 
-	// safety check, ensure no error occurred
-	if err != nil {
-		return "n/a"
-	}
-
-	// otherwise this has a hostname, go ahead and pass it back
-	return hostname
+	// Go ahead and pass it back.
+	return hostname, err
 }
 
 //! Determine if a SIGINT was thrown, and if so, handle it.

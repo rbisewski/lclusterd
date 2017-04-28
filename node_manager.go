@@ -52,8 +52,6 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 	// Set a duration time based on the time-to-live, this will be a
         // sort of 'duration' time.
 	sleep_duration := time.Duration(lease.TTL / 2)
-
-	// infinite loop
 	for {
 
 		// update the time-to-live
@@ -113,7 +111,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 		primedNotificationChan <- true
 	}
 
-	// if a node *did* response, then this node is not the primed node; go
+	// if a node *did* respond, then this node is not the primed node; go
 	// ahead and clean up the lease ref whilst waiting for a turn...
 	if response.Succeeded {
 		inst.internal.Revoke(context.TODO(), lease.ID)
@@ -139,7 +137,7 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 	// Check for a channel response.
 	responsing_chan := inst.internal.Watch(context.Background(), lcfg.Primed)
 
-	// infinite, keep running until this node gets to be primed
+	// keep running until this node gets to be primed
 	for {
 
 		// Grab the response from the channel.
@@ -178,7 +176,6 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
  */
 func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
-	// infinite loop
 	for {
 
 		// Wait for the channel to notify this.
@@ -488,7 +485,6 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 	rchan := inst.internal.Watch(context.Background(), jobQueue,
 		clientv3.WithPrefix())
 
-	// infinite loop
 	for {
 
 		// Grab responses from the channel.
@@ -555,7 +551,6 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 	rch := inst.internal.Watch(context.Background(), lcfg.Queue_dir,
 		clientv3.WithPrefix())
 
-	// infinite loop
 	for {
 
 		// Look for responses in the channel.
@@ -708,7 +703,7 @@ func (inst *EtcdInstance) addToGlobalQueue(j Job) (int64, error) {
  * @param    string    host id
  * @param    Job       given job to add to node
  */
-func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
+func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 
 	// input validation
 	if j == nil {
@@ -723,7 +718,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 		lcfg.EtcdGracePeriodSec * time.Second)
 
 	// Get a response from the primed node.
-	response, err := inst.internal.Get(ctx, path.Join(lcfg.Nodes_dir, hid),
+	response, err := inst.internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
 	// if debug mode...
@@ -777,7 +772,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 	// Developer note: the queued job of uuid is waiting, and its details
 	// can be found in the global 'processesList'.
 	//
-	jobQueue := path.Join(lcfg.Nodes_dir, hid, "jobs")
+	jobQueue := path.Join(lcfg.Nodes_dir, hostID, "jobs")
 
 	// grab the current context, need it to hand off the job to the node
 	ctx, cancel = context.WithTimeout(context.Background(),
@@ -822,10 +817,10 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
  * @return   Node*     pointer to a given node
  * @return   error     error message, if any
  */
-func (inst *EtcdInstance) getNode(hid string) (*Node, error) {
+func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
 
 	// input validation
-	if len(hid) < 1 {
+	if len(hostID) < 1 {
 		return nil, fmt.Errorf("getNode() --> invalid input")
 	}
 
@@ -834,7 +829,7 @@ func (inst *EtcdInstance) getNode(hid string) (*Node, error) {
 		lcfg.EtcdGracePeriodSec * time.Second)
 
 	// Use the host id to determine which node.
-	response, err := inst.internal.Get(ctx, path.Join(lcfg.Nodes_dir, hid),
+	response, err := inst.internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
 	// cancel the current context
@@ -847,7 +842,7 @@ func (inst *EtcdInstance) getNode(hid string) (*Node, error) {
 
 	// safety check, ensure the value is something proper
 	if len(response.Kvs) < 1 {
-		return nil, fmt.Errorf("No node with a Host id " + hid +
+		return nil, fmt.Errorf("No node with a Host id " + hostID +
 			" detected in the store")
 	}
 

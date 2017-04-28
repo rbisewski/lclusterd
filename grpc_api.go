@@ -60,7 +60,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 
 	// input validation
 	if cjr == nil || cjr.Pid < 1 {
-		return &pb.CheckJobResponse{Rc: CjrCorruptedServerInput},
+		return &pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput},
                   errorf("CheckJob() --> invalid input")
 	}
 
@@ -70,7 +70,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	// if an error occurs here, pass back a return code of 0, since for
 	// whatever reason, the server is unable to query jobs at this time
 	if err != nil {
-		return &pb.CheckJobResponse{Rc: CjrUnknown}, err
+		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
 	}
 
 	// Cycle thru all of the currently queued jobs.
@@ -87,7 +87,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 
 			// pass back a return code of 2, stating that the job is
 			// present and currently queued.
-			return &pb.CheckJobResponse{Rc: CjrProcessQueued}, nil
+			return &pb.CheckJobResponse{Rc: lcfg.CjrProcessQueued}, nil
 		}
 	}
 
@@ -100,13 +100,13 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 
 			// pass back a return code of 3, stating that the process is
 			// present and actively running on a node.
-			return &pb.CheckJobResponse{Rc: CjrProcessActive}, nil
+			return &pb.CheckJobResponse{Rc: lcfg.CjrProcessActive}, nil
 		}
 	}
 
 	// since this was unable to find the job on the server, assume the
 	// job does not exist
-	return &pb.CheckJobResponse{Rc: CjrProcessNotExist}, nil
+	return &pb.CheckJobResponse{Rc: lcfg.CjrProcessNotExist}, nil
 }
 
 //! The gRPC API function to stop a job.
@@ -129,7 +129,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	// if any error occurred, pass it back
 	if err != nil {
 		stdlog(err.Error())
-		response.Rc = SjrFailure
+		response.Rc = lcfg.SjrFailure
 		response.Error = err.Error()
 		return response, err
 	}
@@ -148,13 +148,13 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	// if any error occurred while halting the process, pass it back
 	if err != nil {
 		stdlog(err.Error())
-		response.Rc = SjrFailure
+		response.Rc = lcfg.SjrFailure
 		response.Error = err.Error()
 		return response, err
 	}
 
 	// otherwise the process was successfully halted, go ahead and pass
 	// back a success
-	response.Rc = SjrSuccess
+	response.Rc = lcfg.SjrSuccess
 	return response, nil
 }

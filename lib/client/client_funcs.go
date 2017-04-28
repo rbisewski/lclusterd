@@ -49,7 +49,7 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 	lcluster_client := pb.NewLclusterdClient(connection)
 
 	// Start a new job request using the data obtained above.
-	request := &pb.StartJobRequest{
+	request := pb.StartJobRequest{
 		Path:     cmd,
 		Args:     []string{lcfg.Sh, cmd},
 		Env:      []string{"PATH=/bin"},
@@ -61,7 +61,7 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 
 	// Using the new job request defined above, go ahead and start the
         // job.
-	response, err := lcluster_client.StartJob(ctx, request)
+	response, err := lcluster_client.StartJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.
@@ -105,14 +105,14 @@ func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
 	lcluster_client := pb.NewLclusterdClient(connection)
 
 	// Assemble a check job request object
-	request := &pb.CheckJobRequest{Pid: uuid}
+	request := pb.CheckJobRequest{Pid: uuid}
 
 	// Grab the current background context.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
 	// Using the check job request defined above, go ahead and attempt to
 	// stop the job
-	response, err := lcluster_client.CheckJob(ctx, request)
+        response, err := lcluster_client.CheckJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.
@@ -156,14 +156,14 @@ func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
 	lcluster_client := pb.NewLclusterdClient(connection)
 
 	// Assemble a stop job request object
-	request := &pb.StopJobRequest{Pid: uuid}
+	request := pb.StopJobRequest{Pid: uuid}
 
 	// Grab the current background context.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
 	// Using the stop job request defined above, go ahead and attempt to
 	// stop the job
-	response, err := lcluster_client.StopJob(ctx, request)
+	response, err := lcluster_client.StopJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.

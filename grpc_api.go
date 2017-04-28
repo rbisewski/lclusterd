@@ -29,7 +29,7 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
 
 	// Cast the job request into a Job, then attempt to add it to the
 	// queue.
-	pid, err := etcdServer.addToGlobalQueue((*Job)(r))
+	pid, err := etcdServer.addToGlobalQueue((Job)(*r))
 
 	// if any errors occur...
 	if err != nil || pid < 0 {

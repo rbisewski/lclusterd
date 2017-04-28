@@ -592,12 +592,7 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
  * @return   int64    uuid
  * @return   error    error message, if any
  */
-func (inst *EtcdInstance) addToGlobalQueue(j *Job) (int64, error) {
-
-	// input validation
-	if j == nil {
-		return -1, errorf("addToGlobalQueue() --> invalid input")
-	}
+func (inst *EtcdInstance) addToGlobalQueue(j Job) (int64, error) {
 
 	// further check, ensure the instance is safe
 	if inst.internal == nil {

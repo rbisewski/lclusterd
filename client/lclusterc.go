@@ -16,8 +16,8 @@ import (
 
 // Variables to hold the result of argument flags.
 var addjob string
-var checkjob string
-var removejob string
+var checkjob int64
+var removejob int64
 
 //! The client main function.
 /*
@@ -35,14 +35,14 @@ func main() {
 	}
 
 	// If the check job flag was passed...
-	if len(checkjob) > 0 {
+	if checkjob > 0 {
 		checkJobOnServer(checkjob)
 		return
 	}
 
 	// Safety check, ensure that remove job was given a value of 1 or
 	// higher.
-	if len(removejob) > 0 {
+	if removejob > 0 {
 		removeJobFromServer(removejob)
 		return
 	}
@@ -59,12 +59,12 @@ func init() {
 		"Commandline program to execute; e.g. 'grep abc /path/to/file' ")
 
 	// Argument flag for when the end-user wants to check on a job
-	flag.StringVar(&checkjob, "checkjob", "",
+	flag.Int64Var(&checkjob, "checkjob", 0,
 		"Uuid of the job to query status.")
 
 	// Argument flag for when the end-user wants to remove a job
-	flag.StringVar(&removejob, "removejob", "",
-		"Pid of the job to be removed.")
+	flag.Int64Var(&removejob, "removejob", 0,
+		"Uuid of the job to be removed.")
 }
 
 //! Add a job to the server.
@@ -99,25 +99,19 @@ func addJobToServer(cmd string) {
 
 //! Status of a job from the server.
 /*
- * @param    string    uuid of job to stat
+ * @param    int64    uuid of job to stat
  *
  * @return   none
  */
-func checkJobOnServer(uuid string) {
-
-	// Input validation
-	if len(uuid) < 1 {
-		fmt.Printf("checkJobOnServer() --> invalid input")
-		return
-	}
+func checkJobOnServer(uuid int64) {
 
         // Connect to the server and check if the job is still running.
         response, err := libclient.HaveClientCheckJobOnServer(uuid)
 
 	// Safety check, ensure that no error has occurred.
 	if err != nil {
-		fmt.Printf("checkJobOnServer() --> the following error has " +
-			"occurred\n" + err.Error())
+            fmt.Printf(err.Error())
+            return
 	}
 
 	// If an internal server-side error has occurred...
@@ -127,23 +121,24 @@ func checkJobOnServer(uuid string) {
 
 		// Unknown job state
 	} else if response.Rc == lcfg.CjrUnknown {
-		fmt.Printf("The job '" + uuid + "' appears to have an unknown " +
-			"status.\nConsider contacting the server operator.\n")
+		fmt.Printf("The job appears to have an unknown " +
+			   "status.\nConsider contacting the server " +
+                           "operator.\n")
 		return
 
 		// Job does not exist
 	} else if response.Rc == lcfg.CjrProcessNotExist {
-		fmt.Printf("The job '" + uuid + "' is not present.\n")
+		fmt.Printf("The job is not present.\n")
 		return
 
 		// Job is queued
 	} else if response.Rc == lcfg.CjrProcessQueued {
-		fmt.Printf("The job '" + uuid + "' is queued.\n")
+		fmt.Printf("The job is queued.\n")
 		return
 
 		// Job is currently running
 	} else if response.Rc == lcfg.CjrProcessActive {
-		fmt.Printf("The job '" + uuid + "' is currently active.\n")
+		fmt.Printf("The job is currently active.\n")
 		return
 	}
 
@@ -156,14 +151,14 @@ func checkJobOnServer(uuid string) {
 
 //! Remove a job from the server.
 /*
- * @param    string    uuid of job to remove
+ * @param    int64    uuid of job to remove
  *
  * @return   none
  */
-func removeJobFromServer(uuid string) {
+func removeJobFromServer(uuid int64) {
 
 	// Input validation
-	if len(uuid) < 1 {
+	if uuid < 1 {
 		fmt.Printf("removeJobFromServer() --> invalid input")
 		return
 	}
@@ -183,13 +178,13 @@ func removeJobFromServer(uuid string) {
 	// the server otherwise experienced no error while processing the
 	// request
 	if response.Rc == lcfg.SjrDoesNotExist {
-		fmt.Printf("No such process exists with Uuid: " + uuid + "\n")
+		fmt.Printf("No such process exists with given uuid.\n")
 		return
 	}
 
 	// Since this has obtained a response, go ahead and return the result
 	if response.Rc == lcfg.SjrSuccess {
-		fmt.Printf("Successfully removed job of pid: " + uuid + "\n")
+		fmt.Printf("Successfully removed job!\n")
 		return
 	}
 

@@ -12,7 +12,6 @@ import (
 	grpc "google.golang.org/grpc"
 	"../../lcfg"
 	pb "../../lclusterpb"
-	"strconv"
 	"time"
 )
 
@@ -79,24 +78,14 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
  * @return   CheckJobResponse    response from server
  * @return   error               error message, if any
  */
-func HaveClientCheckJobOnServer(uuid string) (pb.CheckJobResponse, error) {
+func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
 
         // Input validation.
-        if len(uuid) < 1 {
+        if uuid < 1 {
             err := "Invalid uuid input given."
             return pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput,
               Error: err}, fmt.Errorf(err)
         }
-
-	// Attempt to cast the pid into an int since that is CheckJobRequest
-	// uses as the Pid var type.
-	pid, err := strconv.ParseInt(uuid, 10, 64)
-
-	// if an error occurs, print it out
-	if err != nil || pid < 1 {
-            return pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput,
-              Error: err.Error()}, err
-	}
 
 	// Dial a connection to the grpc server.
 	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
@@ -116,7 +105,7 @@ func HaveClientCheckJobOnServer(uuid string) (pb.CheckJobResponse, error) {
 	lcluster_client := pb.NewLclusterdClient(connection)
 
 	// Assemble a check job request object
-	request := &pb.CheckJobRequest{Pid: pid}
+	request := &pb.CheckJobRequest{Pid: uuid}
 
 	// Grab the current background context.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -135,29 +124,19 @@ func HaveClientCheckJobOnServer(uuid string) (pb.CheckJobResponse, error) {
 
 //! Function so client can stop a job to the server.
 /*
- * @param    string             uuid of process to stop
+ * @param    int64              uuid of process to stop
  *
  * @return   StopJobResponse    response from server
  * @return   error              error message, if any
  */
-func HaveClientStopJobOnServer(uuid string) (pb.StopJobResponse, error) {
+func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
 
         // Input validation.
-        if len(uuid) < 1 {
+        if uuid < 1 {
             err := "Invalid input."
             return pb.StopJobResponse{Rc: lcfg.SjrFailure, Error: err},
                    fmt.Errorf(err)
         }
-
-	// attempt to cast the pid into an int since that is StopJobRequest
-	// uses as the Pid var type
-	pid, err := strconv.ParseInt(uuid, 10, 64)
-
-	// if an error occurs, print it out
-	if err != nil || pid < 1 {
-            return pb.StopJobResponse{Rc: lcfg.SjrFailure,
-                   Error: err.Error()}, err
-	}
 
 	// Dial a connection to the grpc server.
 	connection, err := grpc.Dial(lcfg.GrpcServerAddr + lcfg.GrpcPort,
@@ -177,7 +156,7 @@ func HaveClientStopJobOnServer(uuid string) (pb.StopJobResponse, error) {
 	lcluster_client := pb.NewLclusterdClient(connection)
 
 	// Assemble a stop job request object
-	request := &pb.StopJobRequest{Pid: pid}
+	request := &pb.StopJobRequest{Pid: uuid}
 
 	// Grab the current background context.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)

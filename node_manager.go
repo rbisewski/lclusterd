@@ -29,18 +29,15 @@ type Node struct {
 /*
  * @param    LeaseID    id of a given etcd key entry
  *
- * @return   none
+ * @return   error      error message, if any
  */
-func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) {
+func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) error {
 
 	// Keep the entry alive.
 	_, err := inst.internal.KeepAliveOnce(context.TODO(), leaseID)
 
-	// if an error occurs, dump it to stdout
-	if err != nil {
-		stdlog(err.Error())
-		stdlog("updateTTL() --> could not update TTL")
-	}
+        // return the error, if any
+        return err
 }
 
 //! Function to keep etcd key values alive.
@@ -59,7 +56,12 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 	for {
 
 		// update the time-to-live
-		inst.updateTTL(lease.ID)
+                err := inst.updateTTL(lease.ID)
+
+                // if unable to update the TTL, break from here
+                if err != nil {
+                    break
+                }
 
 		// then go back to sleep
 		time.Sleep(time.Second * sleep_duration)
@@ -72,15 +74,14 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
  *
  * @return   none
  */
-func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) {
+func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 
 	// Grant the lease.
 	lease, err := inst.internal.Grant(context.TODO(), lcfg.PrimedTTL)
 
-	// if an error occurs, print it out
+	// if an error occurs, pass it back
 	if err != nil {
-		stdlog("primedLock(): failed to issue a TTL for the future primed lock: " + err.Error())
-		return
+		return err
 	}
 
 	// Setup a key-value store.
@@ -101,9 +102,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) {
 
 	// if an error occurred during the, print it out
 	if err != nil {
-		stdlog("primedLock() --> error occured whilst priming lock")
-		stdlog(err.Error())
-		return
+		return err
 	}
 
 	// if no other node response, this probably means that we are primed
@@ -122,6 +121,9 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) {
 
 	// if the node got this far, close the notification channel
 	primedNotificationChan <- false
+
+        // success
+        return nil
 }
 
 //! Listens on the notification channel until the current primed node
@@ -154,7 +156,14 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 			// vie for prime lock
 			stdlog("watchUntilPrimed(): main node no longer primed, " +
 				"attempting to prime this node...")
-			inst.primedLock(primedNotificationChan)
+                        err := inst.primedLock(primedNotificationChan)
+
+                        // if an error occurs, print it our
+                        if err != nil {
+                            stdlog(err.Error() + "\n")
+                        }
+
+                        // end the loop since this is completed
 			return
 		}
 	}
@@ -249,15 +258,8 @@ func (inst *EtcdInstance) initializeJobQueue() error {
 	// cancel the context since it is no longer needed
 	cancel()
 
-	// if an error occurred, print it out
-	if err != nil {
-		stdlog("initializeJobQueue() --> error occured while trying to " +
-			"initialize job queue:\n" + err.Error())
-		return err
-	}
-
-	// if everything worked, pass back nil
-	return nil
+	// pass back the error, if any
+	return err
 }
 
 //! Setup a global id for potential jobs.
@@ -283,15 +285,8 @@ func (inst *EtcdInstance) initializeGlobalJobID() error {
 	// cancel the current context if we no longer need it
 	cancel()
 
-	// if an error occurred, print it out
-	if err != nil {
-		stdlog("initializeGlobalJobID() --> error occured while trying to " +
-			"setup the global job id: " + err.Error())
-		return err
-	}
-
-	// if everything turned out alright, pass back nil
-	return nil
+	// pass back the error, if any
+	return err
 }
 
 //! Setup the processes storage.
@@ -317,15 +312,8 @@ func (inst *EtcdInstance) initializeProcessStorage() error {
 	// cancel the current context as this no longer needs it
 	cancel()
 
-	// if an error occurs, print it out
-	if err != nil {
-		stdlog("initializeProcessStorage() --> unable to make process " +
-			"storage\n" + err.Error())
-		return err
-	}
-
-	// if no error occurred, then pass back nil
-	return nil
+	// pass back the error, if any
+	return err
 }
 
 //! Initialize the nodes.
@@ -375,11 +363,8 @@ func (inst *EtcdInstance) addToNodesList() error {
 	// Grant a lease.
 	lease, err := inst.internal.Grant(context.TODO(), lcfg.NlistTTL)
 
-	// if an error occurred, print it out
+	// if an error occurs, pass it back
 	if err != nil {
-		stdlog("addToNodesList() --> unable to give TTL for node " +
-			inst.node.HostID + "\n" +
-			err.Error())
 		return err
 	}
 
@@ -443,9 +428,8 @@ func (inst *EtcdInstance) storeProcess(p *Process) error {
 	// Attempt to marshell a node.
 	mresult, err := json.Marshal(inst.node)
 
-	// if an error occurs, print it out
+	// if an error occurs, pass it back
 	if err != nil {
-		stdlog(err.Error())
 		return err
 	}
 
@@ -460,14 +444,8 @@ func (inst *EtcdInstance) storeProcess(p *Process) error {
 	// cancel the current context, as it is no longer needed
 	cancel()
 
-	// print out the resulting error, if any
-	if err != nil {
-		stdlog(err.Error())
-		return err
-	}
-
-	// success, so pass back nil
-	return nil
+	// pass back the resulting error, if any
+	return err
 }
 
 //! Grab the process from the global list of processes.
@@ -759,13 +737,11 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 
 	// if an error occurs, pass it back
 	if err != nil {
-		stdlog("QueueJobOnNode() --> unable to get response from primed node")
 		return err
 	}
 
 	// further safety check, ensure the primed node is not null
 	if len(response.Kvs) < 1 {
-		stdlog("QueueJobOnNode() --> primed node appears to be null")
 		return errorf("QueueJobOnNode() --> primed node appears to be null")
 	}
 
@@ -830,11 +806,6 @@ func (inst *EtcdInstance) QueueJobOnNode(hid string, j *Job) error {
 		stdlog(err.Error())
 		return err
 	}
-
-	// print out a helpful message about where the new job was queued
-	stdlog("A new job was added to a node on the following host: " +
-		node.HostName)
-	debugf("Primed node uuid was: " + node.HostID)
 
 	// everything was a success, so return nil here
 	return nil

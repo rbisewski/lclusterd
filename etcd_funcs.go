@@ -25,16 +25,15 @@ type EtcdInstance struct {
 
 //! Function to start etcd in the background.
 /*
- * @return   bool      whether or not this succeeded
+ * @return   error    error message, if any
  */
-func StartEtcdServerBackgroundProcess() bool {
+func StartEtcdServerBackgroundProcess() error {
 
 	// input validation, ensure that the global network namespace value
 	// gets set to something safe; note that this value is set in the main
 	// routine of main.go
 	if len(namespace) < 1 {
-		printf("Error: Improper network namespace length!")
-		return false
+		return errorf("Error: Improper network namespace length!")
 	}
 
 	// Current protocol being used.
@@ -70,17 +69,8 @@ func StartEtcdServerBackgroundProcess() bool {
 	// Attempt to exec the command.
 	err := exec.Command(lcfg.EtcdBinaryPath, etcdArgs...).Start()
 
-	// if an error occurred, print it out and pass back a false
-	if err != nil {
-		printf(err.Error())
-		printf("Error: Unable to start background etcd service!")
-		return false
-	}
-
-	// otherwise if everything turned out fine, pass back a true
-	printf(" ")
-	stdlog("Background etcd service started successfully.")
-	return true
+	// Pass back the error or nil.
+	return err
 }
 
 //! Creates a new EtcdInstance and returns a pointer to it.

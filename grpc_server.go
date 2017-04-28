@@ -22,17 +22,16 @@ type Job pb.StartJobRequest
 
 //! Start a grpc server instance.
 /*
- * @return    none
+ * @return    error    error message, if any
  */
-func startServerInstanceOfGRPC() {
+func startServerInstanceOfGRPC() error {
 
 	// Listen the defined grpc port.
 	listener, err := net.Listen("tcp", lcfg.GrpcPort)
 
 	// Safety check, make sure an error didn't occur.
 	if err != nil {
-		printf(err.Error())
-		panic("Error: Unable to start gRPC server on the requested port!")
+		return err
 	}
 
 	// Initialize gRPC to get a server.
@@ -46,4 +45,7 @@ func startServerInstanceOfGRPC() {
 
 	// Set the server to serve on the port that listener is using
 	remoteProcessCallServer.Serve(listener)
+
+        // Everything worked out fine, so pass nil
+        return nil
 }

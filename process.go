@@ -70,7 +70,6 @@ func StartProcess(j Job) (p *Process, err error) {
 
 	// check if an error occurred
 	if err != nil {
-		stdlog("StartProcess() --> libcontainer could not make a new instance!")
 		return nil, err
 	}
 
@@ -88,7 +87,6 @@ func StartProcess(j Job) (p *Process, err error) {
 
 	// check if any error occurred
 	if err != nil {
-		stdlog("StartProcess() --> container creation failed!")
 		return nil, err
 	}
 
@@ -107,7 +105,6 @@ func StartProcess(j Job) (p *Process, err error) {
 	// safety check, make sure this actually worked; also clean mem in the
 	// event that this is no longer able to continue
 	if err != nil {
-		stdlog("StartProcess() --> container seems to have failed to start...")
 		container.Destroy()
 		return nil, err
 	}

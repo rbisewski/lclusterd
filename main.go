@@ -76,16 +76,21 @@ func main() {
 
 	// Attempt to start the etcd server in the background so that the
 	// instances are able to store and obtain key-values.
-	etcdBgSuccessfullyStarted := StartEtcdServerBackgroundProcess()
+	err := StartEtcdServerBackgroundProcess()
 
 	// safety check, ensure that the background etcd service has actually
 	// started
-	if !etcdBgSuccessfullyStarted {
+	if err != nil {
+                printf(err.Error())
 		printf("The background etcd service could not be started!")
 		printf("Ensure that some other instance of the service is not " +
 			"already running and in use by another process")
 		return
 	}
+
+        // Otherwise the etcd service started correctly.
+	printf(" ")
+	stdlog("Background etcd service started successfully.")
 
 	// Having confirmed that the namespace and rootfs location exists,
 	// background a checker loop to determine if a signal flag to terminate
@@ -142,7 +147,13 @@ func main() {
 
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.
-	startServerInstanceOfGRPC()
+        err = startServerInstanceOfGRPC()
+
+        // if an error, print it out
+        if err != nil {
+                printf(err.Error())
+		printf("Error: Unable to start gRPC server on the requested port!")
+        }
 }
 
 // Initialize the arg flags.

@@ -138,7 +138,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	if process == nil || process.proc == nil {
 		stdlog("No such process exists with Uuid: " +
 			strconv.FormatInt(request.Pid, 10))
-		response.Rc = 1
+		response.Rc = lcfg.SjrDoesNotExist
 		return response, nil
 	}
 

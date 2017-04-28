@@ -76,6 +76,11 @@ func scheduleJob(srv *EtcdInstance, j *Job) error {
 		return err
 	}
 
+	// print out a helpful message about where the new job was queued
+	stdlog("A new job was added to a node on the following host: " +
+		node.HostName)
+	debugf("Primed node uuid was: " + node.HostID)
+
 	// grab the first available node
 	node, err = srv.getNode(node.HostID)
 

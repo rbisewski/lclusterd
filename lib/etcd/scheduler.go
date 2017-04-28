@@ -33,7 +33,7 @@ type Scheduler struct {
 func (inst *EtcdInstance) syncScheduler(hid string, nodes []*Node) error {
 
 	// Assign memory for the scheduler queue.
-	inst.scheduler.Queue = make([]*Element, 0)
+	inst.scheduler.Queue = make([]*Element, 0, len(nodes))
 
 	// Append each of the current nodes.
 	for _, n := range nodes {

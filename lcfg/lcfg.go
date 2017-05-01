@@ -38,12 +38,12 @@ const (
 	Sh = "/bin/bash"
 
 	// Variables needed by etcd to store values.
-	Nodes_dir        = "/nodes"
-	Processes_dir    = "/processes"
-	Jobs_dir         = "/jobs"
-	Queue_dir        = "/queue"
-	Failed_nodes_dir = "/failed_nodes"
-	Warned_jobs_dir  = "/warned_jobs"
+	NodesDir       = "/nodes"
+	ProcessesDir   = "/processes"
+	JobsDir        = "/jobs"
+	QueueDir       = "/queue"
+	FailedNodesDir = "/failed_nodes"
+	WarnedJobsDir  = "/warned_jobs"
 
 	// Location to hold which node is currently ready, aka 'primed'.
 	Primed = "/primed"

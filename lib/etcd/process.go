@@ -8,8 +8,8 @@ package libetcd
 import (
 	"github.com/opencontainers/runc/libcontainer"
 	_ "github.com/opencontainers/runc/libcontainer/nsenter"
-	"os"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 )

@@ -15,9 +15,9 @@ import (
 )
 
 // Variables to hold the result of argument flags.
-var addjob string
-var checkjob int64
-var removejob int64
+var addJob string
+var checkJob int64
+var removeJob int64
 
 //! The client main function.
 /*
@@ -26,23 +26,23 @@ var removejob int64
 func main() {
 
 	// Exit return code.
-	err_code := 0
+	errCode := 0
 
 	// Parse the given argument flags.
 	flag.Parse()
 
 	// If the add job flag was passed...
-	if len(addjob) > 0 {
-		err_code = addJobToServer(addjob)
+	if len(addJob) > 0 {
+		errCode = addJobToServer(addJob)
 
 		// If the check job flag was passed...
-	} else if checkjob > 0 {
-		err_code = checkJobOnServer(checkjob)
+	} else if checkJob > 0 {
+		errCode = checkJobOnServer(checkJob)
 
 		// Safety check, ensure that remove job was given a value of 1 or
 		// higher.
-	} else if removejob > 0 {
-		err_code = removeJobFromServer(removejob)
+	} else if removeJob > 0 {
+		errCode = removeJobFromServer(removeJob)
 
 		// Otherwise just print the usage information
 	} else {
@@ -50,22 +50,22 @@ func main() {
 	}
 
 	// Send out the error code once the program is over.
-	os.Exit(err_code)
+	os.Exit(errCode)
 }
 
 // Initialize the flags beforehand.
 func init() {
 
 	// Argument flag for when end-user requests to add a job
-	flag.StringVar(&addjob, "addjob", "",
+	flag.StringVar(&addJob, "addjob", "",
 		"Commandline program to execute; e.g. 'grep abc /path/to/file' ")
 
 	// Argument flag for when the end-user wants to check on a job
-	flag.Int64Var(&checkjob, "checkjob", 0,
+	flag.Int64Var(&checkJob, "checkjob", 0,
 		"Uuid of the job to query status.")
 
 	// Argument flag for when the end-user wants to remove a job
-	flag.Int64Var(&removejob, "removejob", 0,
+	flag.Int64Var(&removeJob, "removejob", 0,
 		"Uuid of the job to be removed.")
 }
 

@@ -115,7 +115,7 @@ func main() {
 	}
 
 	// Go ahead and start an etcd server instance.
-	etcd_server_inst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
+	etcdServerInst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
 
 	// Safety check, ensure that no errors have occurred during startup of
 	// the EtcdServer. If it fails to start, go ahead and terminate the
@@ -130,7 +130,7 @@ func main() {
 	}
 
 	// Escalate the etcd server instance to become the global etcd server.
-	etcdServer = etcd_server_inst
+	etcdServer = etcdServerInst
 
 	// Mention that the etcd server has now started.
 	log.Println("Etcd server startup on " + hostname)

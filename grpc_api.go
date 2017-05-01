@@ -11,9 +11,9 @@ import (
 	pb "./lclusterpb"
 	libetcd "./lib/etcd"
 	"fmt"
+	"golang.org/x/net/context"
 	"log"
 	"path"
-	"golang.org/x/net/context"
 	"strconv"
 )
 
@@ -69,8 +69,8 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	}
 
 	// Obtain the response, which contains the list of queued jobs.
-	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.Queue_dir,
-          strconv.FormatInt(cjr.Pid, 10)))
+	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.QueueDir,
+		strconv.FormatInt(cjr.Pid, 10)))
 
 	// if an error occurs here, pass back a return code of 0, since for
 	// whatever reason, the server is unable to query jobs at this time
@@ -90,14 +90,14 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 		}
 	}
 
-        // If the process could not be detected on the system, pass back a
-        // message stating that it does not exist. Note that by the time the
-        // program logic has reached this point, the job either never
-        // existed or has since completed.
-        //
-        // TODO: suggest a feature where-by the program might one day keep
-        //       track of past jobs via logging or database.
-        //
+	// If the process could not be detected on the system, pass back a
+	// message stating that it does not exist. Note that by the time the
+	// program logic has reached this point, the job either never
+	// existed or has since completed.
+	//
+	// TODO: suggest a feature where-by the program might one day keep
+	//       track of past jobs via logging or database.
+	//
 	return &pb.CheckJobResponse{Rc: lcfg.CjrProcessNotExist}, nil
 }
 

@@ -20,13 +20,13 @@ import (
  *
  * @return   configs.Config    libcontainer config
  */
-func GenerateRuncConfig(container_name string, hostname string, rootfs string) *configs.Config {
+func GenerateRuncConfig(containerName string, hostname string, rootfs string) *configs.Config {
 
 	// Set the default mounting flags.
 	defaultMountFlags := syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV
 
 	// Assemble the new config for the container.
-	new_config := &configs.Config{
+	newConfig := &configs.Config{
 
 		Rootfs: rootfs,
 
@@ -47,7 +47,7 @@ func GenerateRuncConfig(container_name string, hostname string, rootfs string) *
 		}),
 
 		Cgroups: &configs.Cgroup{
-			Name:   container_name,
+			Name:   containerName,
 			Parent: "system",
 			Resources: &configs.Resources{
 				MemorySwappiness: nil,
@@ -127,5 +127,5 @@ func GenerateRuncConfig(container_name string, hostname string, rootfs string) *
 	}
 
 	// Go ahead and return the newly generated config
-	return new_config
+	return newConfig
 }

@@ -46,7 +46,7 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 	defer connection.Close()
 
 	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
+	lclusterClient := pb.NewLclusterdClient(connection)
 
 	// Start a new job request using the data obtained above.
 	request := pb.StartJobRequest{
@@ -61,7 +61,7 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 
 	// Using the new job request defined above, go ahead and start the
 	// job.
-	response, err := lcluster_client.StartJob(ctx, &request)
+	response, err := lclusterClient.StartJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.
@@ -102,7 +102,7 @@ func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
 	defer connection.Close()
 
 	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
+	lclusterClient := pb.NewLclusterdClient(connection)
 
 	// Assemble a check job request object
 	request := pb.CheckJobRequest{Pid: uuid}
@@ -112,7 +112,7 @@ func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
 
 	// Using the check job request defined above, go ahead and attempt to
 	// stop the job
-	response, err := lcluster_client.CheckJob(ctx, &request)
+	response, err := lclusterClient.CheckJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.
@@ -153,7 +153,7 @@ func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
 	defer connection.Close()
 
 	// Create an lcluster client
-	lcluster_client := pb.NewLclusterdClient(connection)
+	lclusterClient := pb.NewLclusterdClient(connection)
 
 	// Assemble a stop job request object
 	request := pb.StopJobRequest{Pid: uuid}
@@ -163,7 +163,7 @@ func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
 
 	// Using the stop job request defined above, go ahead and attempt to
 	// stop the job
-	response, err := lcluster_client.StopJob(ctx, &request)
+	response, err := lclusterClient.StopJob(ctx, &request)
 
 	// Cancel the current context since this has either generated a
 	// response or an error.

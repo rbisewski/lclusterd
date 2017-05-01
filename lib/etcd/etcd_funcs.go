@@ -184,7 +184,7 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 
 	// Set a duration time based on the time-to-live, this will be a
 	// sort of 'duration' time.
-	sleep_duration := time.Duration(lease.TTL / 2)
+	sleepDuration := time.Duration(lease.TTL / 2)
 	for {
 
 		// update the time-to-live
@@ -196,7 +196,7 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 		}
 
 		// then go back to sleep
-		time.Sleep(time.Second * sleep_duration)
+		time.Sleep(sleepDuration)
 	}
 }
 

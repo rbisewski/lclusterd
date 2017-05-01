@@ -9,6 +9,7 @@ import (
 	"github.com/opencontainers/runc/libcontainer"
 	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 	"os"
+	"log"
 	"path/filepath"
 	"runtime"
 )
@@ -48,8 +49,8 @@ func init() {
 		runtime.LockOSThread()
 		factory, _ := libcontainer.New("")
 		if err := factory.StartInitialization(); err != nil {
-			stdlog("process.init() --> failure to initialize")
-			stdlog(err.Error())
+			log.Println("process.init() --> failure to initialize")
+			log.Println(err.Error())
 			return
 		}
 		panic("--this line should have never been executed, congratulations--")

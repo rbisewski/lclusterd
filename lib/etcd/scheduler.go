@@ -8,6 +8,7 @@ package libetcd
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -50,7 +51,7 @@ func (inst *EtcdInstance) syncScheduler(hid string, nodes []*Node) error {
 	}
 
 	// Mention that the scheduler has began.
-	stdlog("Scheduler sync'd with NodeManager on " + hostname)
+	log.Println("Scheduler sync'd with NodeManager on " + hostname)
 	debugf("Primed node uuid: " + hid)
 
 	// pass back a nil since this was fine
@@ -93,7 +94,7 @@ func (inst *EtcdInstance) scheduleJob(j *Job) error {
 	}
 
 	// print out a helpful message about where the new job was queued
-	stdlog("A new job was added to a node on the following host: " +
+	log.Println("A new job was added to a node on the following host: " +
 		node.HostName)
 	debugf("Primed node uuid was: " + node.HostID)
 

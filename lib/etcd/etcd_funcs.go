@@ -16,6 +16,7 @@ import (
 	"golang.org/x/net/context"
 	"os"
 	"os/exec"
+	"log"
 	"path"
 	"strconv"
 	"strings"
@@ -294,7 +295,7 @@ func (inst *EtcdInstance) watchUntilPrimed(notificationChan chan bool) {
 
 			// if an error occurs, print it our
 			if err != nil {
-				stdlog(err.Error() + "\n")
+				log.Println(err.Error() + "\n")
 			}
 
 			// end the loop since this is completed
@@ -326,7 +327,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// if an error occurs, print it out
 		if err != nil {
-			stdlog("primeThisNode() --> node gathering failed\n " +
+			log.Println("primeThisNode() --> node gathering failed\n " +
 				err.Error())
 			continue
 		}
@@ -336,7 +337,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// if an error occurs, print it
 		if err != nil {
-			stdlog("primeThisNode() --> unable to create job queue\n" +
+			log.Println("primeThisNode() --> unable to create job queue\n" +
 				err.Error())
 			continue
 		}
@@ -346,7 +347,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// if an error occurs, print it
 		if err != nil {
-			stdlog("primeThisNode() --> unable to set global id\n" +
+			log.Println("primeThisNode() --> unable to set global id\n" +
 				err.Error())
 			continue
 		}
@@ -356,7 +357,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// if an error occurred, print it out
 		if err != nil {
-			stdlog("primeThisNode() --> unable to set aside storage for " +
+			log.Println("primeThisNode() --> unable to set aside storage for " +
 				"processes\n" + err.Error())
 			continue
 		}
@@ -367,7 +368,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 		// if an error occurs, print it out and skip to the next loop
 		if err != nil {
-			stdlog(err.Error())
+			log.Println(err.Error())
 			continue
 		}
 
@@ -511,7 +512,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 
 	// if an error occurred, print it out
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
@@ -654,8 +655,8 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchClientJobQueue() --> failed to read job data")
-				stdlog(err.Error())
+				log.Println("watchClientJobQueue() --> failed to read job data")
+				log.Println(err.Error())
 				return
 			}
 
@@ -665,8 +666,8 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchClientJobQueue() --> unable to start process")
-				stdlog(err.Error())
+				log.Println("watchClientJobQueue() --> unable to start process")
+				log.Println(err.Error())
 				return
 			}
 
@@ -675,15 +676,15 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchClientJobQueue() --> could not store process " +
+				log.Println("watchClientJobQueue() --> could not store process " +
 					"data into etcd")
-				stdlog(err.Error())
+				log.Println(err.Error())
 				return
 			}
 
 			// otherwise the job started successful, so go ahead and print
 			// out a helpful message
-			stdlog("New job started (" + j.Path + ") in a node on cluster " +
+			log.Println("New job started (" + j.Path + ") in a node on cluster " +
 				"host: " + inst.node.HostName)
 			debugf("Primed node that received job has Uuid: " +
 				inst.node.HostID)
@@ -720,8 +721,8 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 
 			// if an error occurred, print it out
 			if err != nil {
-				stdlog("watchGeneralJobQueue() --> unable to read job data")
-				stdlog(err.Error())
+				log.Println("watchGeneralJobQueue() --> unable to read job data")
+				log.Println(err.Error())
 			}
 
 			// attempt to schedule the job
@@ -729,12 +730,12 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 
 			// if an error occurred, print it out
 			if err != nil {
-				stdlog("watchGeneralJobQueue() --> unable to schedule job")
-				stdlog(err.Error())
+				log.Println("watchGeneralJobQueue() --> unable to schedule job")
+				log.Println(err.Error())
 			}
 
 			// print out a helpful message
-			stdlog("Node manager has detected a scheduled job.")
+			log.Println("Node manager has detected a scheduled job.")
 		}
 	}
 }
@@ -779,7 +780,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 	// this point it is likely a connection issue exists, hence the need to
 	// check for a proper contextual response
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return -1, err
 	}
 
@@ -792,7 +793,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// if an error occurs, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return -1, err
 	}
 
@@ -804,7 +805,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// if an error occurs, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return -1, err
 	}
 
@@ -826,7 +827,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 		// if an error occurs, this failed to insert the new job
 		if err != nil {
 			cancel()
-			stdlog(err.Error())
+			log.Println(err.Error())
 			return -1, err
 		}
 
@@ -842,7 +843,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// if an error occurred, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return -1, err
 	}
 
@@ -954,7 +955,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 
 	// if an error occurred, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 

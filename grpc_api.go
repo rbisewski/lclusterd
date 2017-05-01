@@ -11,6 +11,7 @@ import (
 	pb "./lclusterpb"
 	libetcd "./lib/etcd"
 	"fmt"
+	"log"
 	"golang.org/x/net/context"
 	"strconv"
 )
@@ -136,7 +137,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 
 	// if any error occurred, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		response.Rc = lcfg.SjrFailure
 		response.Error = err.Error()
 		return response, err
@@ -144,7 +145,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 
 	// safety check, ensure this actually got a process
 	if process == nil || process.Proc == nil {
-		stdlog("No such process exists with Uuid: " +
+		log.Println("No such process exists with Uuid: " +
 			strconv.FormatInt(request.Pid, 10))
 		response.Rc = lcfg.SjrDoesNotExist
 		return response, nil
@@ -155,7 +156,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 
 	// if any error occurred while halting the process, pass it back
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		response.Rc = lcfg.SjrFailure
 		response.Error = err.Error()
 		return response, err

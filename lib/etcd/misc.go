@@ -10,9 +10,8 @@ import (
 	"../../lcfg"
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
+	"log"
 	"strings"
-	"time"
 )
 
 //! Spawns a pseudo-random uuid based on /dev/random.
@@ -37,7 +36,7 @@ func spawnUuid(num int) string {
 
 	// safety check, ensure no error occurred
 	if err != nil {
-		stdlog("spawnPseudorandomString() --> unable to spawn crypto num!")
+		log.Println("spawnPseudorandomString() --> unable to spawn crypto num!")
 		return ""
 	}
 
@@ -46,7 +45,7 @@ func spawnUuid(num int) string {
 
 	// safety check, ensure no error occurred
 	if len(pseudoRandStr) < 1 {
-		stdlog("spawnPseudorandomString() --> unable to base64 encode!")
+		log.Println("spawnPseudorandomString() --> unable to base64 encode!")
 		return ""
 	}
 
@@ -60,26 +59,6 @@ func spawnUuid(num int) string {
 
 	// otherwise return the (sufficiently?) random base64 string
 	return pseudoRandStr
-}
-
-//! Wrapper to give a log-like appearance to stdout.
-/*
- * @param     string    ASCII to dump to stdout
- *
- * @return    none
- */
-func stdlog(ascii string) {
-
-	// Input validation
-	if len(ascii) < 1 {
-		return
-	}
-
-	// Grab the current time in seconds from epoch.
-	currentTime := time.Now().String()
-
-	// Append the timestamp to the string message.
-	fmt.Printf("[" + currentTime + "] " + ascii + "\n")
 }
 
 //! Function to print out debug messages
@@ -100,9 +79,6 @@ func debugf(ascii string) {
 		return
 	}
 
-	// Grab the current time in seconds from epoch.
-	currentTime := time.Now().String()
-
 	// Append the timestamp to the string message.
-	fmt.Printf("[" + currentTime + "] DEBUG - " + ascii + "\n")
+	log.Println("DEBUG - " + ascii + "\n")
 }

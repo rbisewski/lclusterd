@@ -10,6 +10,7 @@ import (
 	"./lcfg"
 	pb "./lclusterpb"
 	grpc "google.golang.org/grpc"
+	"log"
 	"net"
 )
 
@@ -35,7 +36,7 @@ func startGRPCServer() error {
 	remoteProcessCallServer := grpc.NewServer()
 
 	// Mention that the grpc server has now started.
-	stdlog("gRPC server startup successful.")
+	log.Println("gRPC server startup successful.")
 
 	// Registering grpc with the lclusterd server
 	pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})

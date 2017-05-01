@@ -10,6 +10,7 @@ import (
 	libetcd "./lib/etcd"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -86,7 +87,7 @@ func main() {
 
 	// Otherwise the etcd service started correctly.
 	fmt.Printf(" ")
-	stdlog("Background etcd service started successfully.")
+	log.Println("Background etcd service started successfully.")
 
 	// Having confirmed that the namespace and rootfs location exists,
 	// background a checker loop to determine if a signal flag to terminate
@@ -94,22 +95,22 @@ func main() {
 	go loopUtilSIGINT()
 
 	// Give end-user a message stating that the lclusterd server started
-	stdlog(" ")
-	stdlog("-----------------------------")
-	stdlog(" lcluster Server has started ")
-	stdlog("-----------------------------")
-	stdlog(" ")
+	log.Println(" ")
+	log.Println("-----------------------------")
+	log.Println(" lcluster Server has started ")
+	log.Println("-----------------------------")
+	log.Println(" ")
 
 	// Print out some informative information about how the namespace.
-	stdlog("Network Namespace: " + namespace)
+	log.Println("Network Namespace: " + namespace)
 
 	// Print out some informative information about how the rootfs dir.
-	stdlog("Rootfs Location: " + rootfs)
+	log.Println("Rootfs Location: " + rootfs)
 
 	// Grab the hostname, if an error occurs, end this here.
 	hostname, err := os.Hostname()
 	if err != nil {
-		stdlog(err.Error())
+		log.Println(err.Error())
 		return
 	}
 
@@ -120,11 +121,11 @@ func main() {
 	// the EtcdServer. If it fails to start, go ahead and terminate the
 	// program.
 	if err != nil {
-		stdlog(" ")
-		stdlog("The following error has occurred: ")
-		stdlog(err.Error())
-		stdlog(" ")
-		stdlog("Warning: Unable to start etcd server!")
+		log.Println(" ")
+		log.Println("The following error has occurred: ")
+		log.Println(err.Error())
+		log.Println(" ")
+		log.Println("Warning: Unable to start etcd server!")
 		return
 	}
 
@@ -132,14 +133,14 @@ func main() {
 	etcdServer = etcd_server_inst
 
 	// Mention that the etcd server has now started.
-	stdlog("Etcd server startup on " + hostname)
+	log.Println("Etcd server startup on " + hostname)
 
 	// Have the etcd server initialize the nodes, with a "primed" node that
 	// functions as a sort of "manager" for the other nodes
 	etcdServer.InitNode()
 
 	// Mention that the node manager has now started.
-	stdlog("Node manager startup successful.")
+	log.Println("Node manager startup successful.")
 
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.

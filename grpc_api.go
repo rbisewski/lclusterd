@@ -106,8 +106,14 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 		}
 	}
 
-	// since this was unable to find the job on the server, assume the
-	// job does not exist
+        // If the process could not be detected on the system, pass back a
+        // message stating that it does not exist. Note that by the time the
+        // program logic has reached this point, the job either never
+        // existed or has since completed.
+        //
+        // TODO: suggest a feature where-by the program might one day keep
+        //       track of past jobs via logging or database.
+        //
 	return &pb.CheckJobResponse{Rc: lcfg.CjrProcessNotExist}, nil
 }
 

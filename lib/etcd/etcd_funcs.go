@@ -202,14 +202,16 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 
 //! Prime a given node to make it ready for jobs.
 /*
- * @param    chan    channel for listening who is primed
+ * @param    chan              channel for listening who is primed
+ * @param    context.Context   current context
  *
  * @return   none
  */
-func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
+func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool,
+  ctx context.Context) error {
 
 	// Grant the lease.
-	lease, err := inst.Client.Grant(context.TODO(), lcfg.PrimedTTL)
+	lease, err := inst.Client.Grant(ctx, lcfg.PrimedTTL)
 
 	// if an error occurs, pass it back
 	if err != nil {
@@ -219,18 +221,12 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	// Setup a key-value store.
 	kvc := clientv3.NewKV(inst.Client)
 
-	// Grab the background context.
-	ctx, cancel := context.WithTimeout(context.Background(), lcfg.EtcdGracePeriodSec*time.Second)
-
 	// Check if the value exists, and insert it if it does not.
 	response, err := kvc.Txn(ctx).
 		If(clientv3.Compare(clientv3.Value(lcfg.Primed), "=", "primed")).
 		Then().
 		Else(clientv3.OpPut(lcfg.Primed, "primed", clientv3.WithLease(lease.ID))).
 		Commit()
-
-	// since this is done, cancel the current context
-	cancel()
 
 	// If an error occurred, pass it back.
 	if err != nil {
@@ -247,7 +243,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	// if a node *did* respond, then this node is not the primed node; go
 	// ahead and clean up the lease ref whilst waiting for a turn...
 	if response.Succeeded {
-		inst.Client.Revoke(context.TODO(), lease.ID)
+		inst.Client.Revoke(ctx, lease.ID)
 		go inst.watchUntilPrimed(primedNotificationChan)
 	}
 
@@ -265,7 +261,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
  *
  * @return   none
  */
-func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
+func (inst *EtcdInstance) watchUntilPrimed(notificationChan chan bool) {
 
 	// Check for a channel response.
 	responsing_chan := inst.Client.Watch(context.Background(), lcfg.Primed)
@@ -284,11 +280,15 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 				continue
 			}
 
-			// otherwise the primed node is complete, so this node needs to
-			// vie for prime lock
-			stdlog("watchUntilPrimed(): main node no longer primed, " +
-				"attempting to prime this node...")
-			err := inst.primedLock(primedNotificationChan)
+	                // Grab the context, as it is required to manage the nodes.
+	                ctx, cancel := context.WithTimeout(context.Background(),
+                          lcfg.PrimedTTL*time.Second)
+
+                        // Attempt to prime the node.
+                        err := inst.primedLock(notificationChan, ctx)
+
+                        // Cancel the current context.
+                        cancel()
 
 			// if an error occurs, print it our
 			if err != nil {
@@ -478,9 +478,23 @@ func (inst *EtcdInstance) InitNode() (chan bool, error) {
 
 	// wait around until this node can be primed
 	go inst.primeThisNode(notify)
-	inst.primedLock(notify)
 
-	// pass back a ref to the notif
+	// Grab the context, as it is required to manage the nodes.
+	ctx, cancel := context.WithTimeout(context.Background(),
+          lcfg.PrimedTTL*time.Second)
+
+        // Attempt to prime the node.
+        err = inst.primedLock(notify, ctx)
+
+        // Cancel the current context.
+        cancel()
+
+	// If any error, pass it back.
+	if err != nil {
+		return nil, err
+	}
+
+	// Otherwise hand a ref to the notification channel.
 	return notify, nil
 }
 
@@ -743,15 +757,17 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 	// Grab the list of queued jobs.
 	response, err := inst.Client.Get(ctx, lcfg.Queue_dir)
 
-	// if debug mode...
-	if lcfg.DebugMode {
+        // Debug; if there are no jobs, do this.
+        if lcfg.DebugMode && len(response.Kvs) < 1 {
+            debugf("No jobs are currently in the queue.")
 
-		// cycle through all of the current jobs for the benefit of the developer
-		debugf("Current queued jobs are as follows:")
-		for i, ent := range response.Kvs {
-			debugf(strconv.Itoa(i+1) + ") " + string(ent.Value))
-		}
-	}
+        // Debug, if there is at least 1 job, print it out.
+        } else if lcfg.DebugMode {
+	    debugf("Current queued jobs are as follows:")
+	    for i, ent := range response.Kvs {
+		debugf(strconv.Itoa(i+1) + ") " + string(ent.Value))
+	    }
+        }
 
 	// cancel the context as it is no longer needed
 	cancel()

@@ -1,8 +1,8 @@
 /*
-* File: lclusterpb.proto
-*
-* Description: prototype for remote process calls
-*/
+ * File: lclusterpb.proto
+ *
+ * Description: prototype for remote process calls
+ */
 
 syntax = "proto3";
 
@@ -53,14 +53,7 @@ message CheckJobRequest {
 // The CheckJobResponse definition.
 message CheckJobResponse {
 
-    // Response code, as int64
-    //
-    // -1 --> failure, due to corrupted server or input
-    //  0 --> unknown job status
-    //  1 --> process does not exist
-    //  2 --> process is queued
-    //  3 --> process is active on a node
-    //
+    // CheckJobResponse response code, see the lcfg package for more details
     int64 rc = 1;
 
     // Error message as a string, if any
@@ -77,12 +70,7 @@ message StopJobRequest {
 // The StopJobResponse definition.
 message StopJobResponse {
 
-    // Response code, as int64
-    //
-    // -1 --> failure, due to corrupted server or input
-    //  0 --> success
-    //  1 --> process does not exist
-    //
+    // StopJobResponse response code, see the lcfg package for more details
     int64 rc = 1;
 
     // Error message as a string, if any

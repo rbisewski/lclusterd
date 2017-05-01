@@ -177,26 +177,22 @@ func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) error {
 //! Function to keep etcd key values alive.
 /*
  * @param    LeaseGrantResponse    lease response
- *
- * @return   none
  */
-func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
+func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse, successfullyUpdatedTTL *bool) {
 
-	// Set a duration time based on the time-to-live, this will be a
-	// sort of 'duration' time.
-	sleepDuration := time.Duration(lease.TTL / 2)
 	for {
-
-		// update the time-to-live
+		// Update the time-to-live
 		err := inst.updateTTL(lease.ID)
 
-		// if unable to update the TTL, break from here
+		// If unable to update the TTL, pass back the error message.
 		if err != nil {
-			break
+                        *successfullyUpdatedTTL = false
+                        break
 		}
 
-		// then go back to sleep
-		time.Sleep(sleepDuration)
+		// Then go back to sleep.
+		time.Sleep(time.Duration(lease.TTL / 2))
+                *successfullyUpdatedTTL = true
 	}
 }
 
@@ -233,11 +229,17 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool,
 		return err
 	}
 
-	// if no other node response, this probably means that we are primed
-	// node, so keep the lease entry alive
+	// If no other node response, this probably means that we are primed
+	// node, so keep the lease entry alive.
 	if !response.Succeeded {
-		go inst.keepKeyAlive(lease)
-		primedNotificationChan <- true
+
+                // Go ahead and attempt to update the TTL of the key.
+                successfullyUpdatedTTL := true
+                go inst.keepKeyAlive(lease, &successfullyUpdatedTTL)
+
+                // As long as this can continue to properly update the TTL,
+                // then the channel can stay open.
+		primedNotificationChan <- successfullyUpdatedTTL
 	}
 
 	// if a node *did* respond, then this node is not the primed node; go
@@ -557,7 +559,8 @@ func (inst *EtcdInstance) addToNodesList() error {
 	}
 
 	// keep the key entry alive
-	go inst.keepKeyAlive(lease)
+        successfullyUpdatedTTL := true
+	go inst.keepKeyAlive(lease, &successfullyUpdatedTTL)
 
 	// keep tabs on the job queue
 	go inst.watchClientJobQueue()

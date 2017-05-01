@@ -276,7 +276,7 @@ func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 		// Grab the response from the channel.
 		wresponse := <-responsing_chan
 
-		// Cycle thru the events.
+		// Cycle through the events.
 		for _, ev := range wresponse.Events {
 
 			// if not a deleted prime event, skip it...
@@ -623,7 +623,7 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 		// Grab responses from the channel.
 		wresponse := <-rchan
 
-		// Cycle thru all given events.
+		// Cycle through all given events.
 		for _, ev := range wresponse.Events {
 
 			// this function is only interested in put events
@@ -689,7 +689,7 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 		// Look for responses in the channel.
 		wresponse := <-rch
 
-		// Cycle thru all of the events.
+		// Cycle through all of the events.
 		for _, ev := range wresponse.Events {
 
 			// this function is only interested in put events
@@ -746,7 +746,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 	// if debug mode...
 	if lcfg.DebugMode {
 
-		// cycle thru all of the current jobs for the benefit of the developer
+		// cycle through all of the current jobs for the benefit of the developer
 		debugf("Current queued jobs are as follows:")
 		for i, ent := range response.Kvs {
 			debugf(strconv.Itoa(i+1) + ") " + string(ent.Value))
@@ -811,7 +811,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 			return -1, err
 		}
 
-		// Cycle thru the values of the newly queued job.
+		// Cycle through the values of the newly queued job.
 		debugf("The newly queued job was as follows:")
 		for _, ent := range debug_resp.Kvs {
 			debugf(string(ent.Value))
@@ -857,7 +857,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 	// if debug mode...
 	if lcfg.DebugMode && err == nil {
 
-		// cycle thru all of the current nodes for the benefit of the developer
+		// cycle through all of the current nodes for the benefit of the developer
 		debugf("The primed node contains the following:")
 		for _, ent := range response.Kvs {
 			debugf(string(ent.Key) + " => " + string(ent.Value))

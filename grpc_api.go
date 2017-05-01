@@ -75,7 +75,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
 	}
 
-	// Cycle thru all of the currently queued jobs.
+	// Cycle through all of the currently queued jobs.
 	for _, job := range response.Kvs {
 
 		// Cast the job key to a string; it should be the uuid.
@@ -94,7 +94,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	}
 
 	// Since the job was not scheduled, perhaps it is active, so go ahead
-	// and cycle thru all of the process refs.
+	// and cycle through all of the process refs.
 	for _, p := range etcdServer.ProcessesList {
 
 		// if a job exists with the given pid

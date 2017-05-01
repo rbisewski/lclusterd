@@ -107,6 +107,7 @@ Where uuid is the assigned number of the job in question.
 * handling failed nodes
 * watching warned jobs
 * get nodes to send console output data back to server
+* consider logging / recording past jobs
 
 
 # Authors

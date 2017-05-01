@@ -21,7 +21,7 @@ type LclusterdServer struct {
 /*
  * @return    error    error message, if any
  */
-func startServerInstanceOfGRPC() error {
+func startGRPCServer() error {
 
 	// Listen the defined grpc port.
 	listener, err := net.Listen("tcp", lcfg.GrpcPort)

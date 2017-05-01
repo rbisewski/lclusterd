@@ -143,7 +143,7 @@ func main() {
 
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.
-	err = startServerInstanceOfGRPC()
+	err = startGRPCServer()
 
 	// if an error, print it out
 	if err != nil {

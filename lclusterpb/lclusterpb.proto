@@ -1,0 +1,78 @@
+/*
+ * File: lclusterpb.proto
+ *
+ * Description: prototype for remote process calls
+ */
+
+syntax = "proto3";
+
+package lclusterpb;
+
+// Define a Lclusterd service for gRPC usage.
+service Lclusterd {
+    rpc StartJob (StartJobRequest) returns (StartJobResponse) {} 
+    rpc CheckJob (CheckJobRequest) returns (CheckJobResponse) {}
+    rpc StopJob (StopJobRequest) returns (StopJobResponse) {}
+}
+
+// The StartJobRequest definition.
+message StartJobRequest {
+
+    // Description
+    string description   = 1;
+
+    // Shell, binary, and env
+    string path          = 2;
+    repeated string args = 3;
+    repeated string env  = 4;
+
+    // Hostname
+    string hostname      = 5;
+
+    // Process id, assigned as per Lclusterd
+    int64 pid            = 6;
+}
+
+// The StartJobResponse definition.
+message StartJobResponse {
+
+    // Process id, can be -1 if an error occurs
+    int64 pid    = 1;
+
+    // Error message as a string, if any
+    string error = 2;
+}
+
+// The CheckJobRequest definition.
+message CheckJobRequest {
+
+    // Process id of the job intending to check
+    int64 pid = 1;
+}
+
+// The CheckJobResponse definition.
+message CheckJobResponse {
+
+    // CheckJobResponse response code, see the lcfg package for more details
+    int64 rc = 1;
+
+    // Error message as a string, if any
+    string error = 2;
+}
+
+// The StopJobRequest definition.
+message StopJobRequest {
+
+    // Process id of the job intending to stop
+    int64 pid = 1;
+}
+
+// The StopJobResponse definition.
+message StopJobResponse {
+
+    // StopJobResponse response code, see the lcfg package for more details
+    int64 rc = 1;
+
+    // Error message as a string, if any
+    string error = 2;
+}

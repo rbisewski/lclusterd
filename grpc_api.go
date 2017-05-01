@@ -12,6 +12,7 @@ import (
 	libetcd "./lib/etcd"
 	"fmt"
 	"log"
+	"path"
 	"golang.org/x/net/context"
 	"strconv"
 )
@@ -68,34 +69,16 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	}
 
 	// Obtain the response, which contains the list of queued jobs.
-	response, err := etcdServer.Client.Get(ctx, lcfg.Queue_dir)
+	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.Queue_dir,
+          strconv.FormatInt(cjr.Pid, 10)))
 
 	// if an error occurs here, pass back a return code of 0, since for
 	// whatever reason, the server is unable to query jobs at this time
-	if err != nil {
+	if err != nil || response == nil {
 		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
 	}
 
-	// Cycle through all of the currently queued jobs.
-	for _, job := range response.Kvs {
-
-		// Cast the job key to a string; it should be the uuid.
-		job_uuid := string(job.Key)
-
-		// Cast the CheckJobRequest pid to a string.
-		requestPid := strconv.FormatInt(cjr.Pid, 10)
-
-		// if a job exists with the given pid
-		if job_uuid == requestPid {
-
-			// pass back a return code of 2, stating that the job is
-			// present and currently queued.
-			return &pb.CheckJobResponse{Rc: lcfg.CjrProcessQueued}, nil
-		}
-	}
-
-	// Since the job was not scheduled, perhaps it is active, so go ahead
-	// and cycle through all of the process refs.
+	// Cycle through all of the process refs and check if the job is active.
 	for _, p := range etcdServer.ProcessesList {
 
 		// if a job exists with the given pid

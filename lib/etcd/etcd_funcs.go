@@ -28,8 +28,8 @@ type Job pb.StartJobRequest
 // Etcd instance structure, which holds a pointer to the client and nodes.
 type EtcdInstance struct {
 
-	// Internal pointer to the server itself.
-	Internal *clientv3.Client
+	// Client pointer to the server itself.
+	Client *clientv3.Client
 
 	// Rootfs path, as string
 	rootfs string
@@ -151,8 +151,8 @@ func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
 	// Assign a scheduler object.
 	newScheduler := &Scheduler{}
 
-	// Create an etcdInstance using the new Internal client.
-	inst = &EtcdInstance{Internal: newlyGeneratedClient, rootfs: rootfs,
+	// Create an etcdInstance using the new Client client.
+	inst = &EtcdInstance{Client: newlyGeneratedClient, rootfs: rootfs,
 		node: node, scheduler: newScheduler}
 
 	// Return the completed etcdInstance.
@@ -168,7 +168,7 @@ func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
 func (inst *EtcdInstance) updateTTL(leaseID clientv3.LeaseID) error {
 
 	// Keep the entry alive.
-	_, err := inst.Internal.KeepAliveOnce(context.TODO(), leaseID)
+	_, err := inst.Client.KeepAliveOnce(context.TODO(), leaseID)
 
 	// return the error, if any
 	return err
@@ -209,7 +209,7 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse) {
 func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 
 	// Grant the lease.
-	lease, err := inst.Internal.Grant(context.TODO(), lcfg.PrimedTTL)
+	lease, err := inst.Client.Grant(context.TODO(), lcfg.PrimedTTL)
 
 	// if an error occurs, pass it back
 	if err != nil {
@@ -217,7 +217,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	}
 
 	// Setup a key-value store.
-	kvc := clientv3.NewKV(inst.Internal)
+	kvc := clientv3.NewKV(inst.Client)
 
 	// Grab the background context.
 	ctx, cancel := context.WithTimeout(context.Background(), lcfg.EtcdGracePeriodSec*time.Second)
@@ -247,7 +247,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 	// if a node *did* respond, then this node is not the primed node; go
 	// ahead and clean up the lease ref whilst waiting for a turn...
 	if response.Succeeded {
-		inst.Internal.Revoke(context.TODO(), lease.ID)
+		inst.Client.Revoke(context.TODO(), lease.ID)
 		go inst.watchUntilPrimed(primedNotificationChan)
 	}
 
@@ -268,7 +268,7 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool) error {
 func (inst *EtcdInstance) watchUntilPrimed(primedNotificationChan chan bool) {
 
 	// Check for a channel response.
-	responsing_chan := inst.Internal.Watch(context.Background(), lcfg.Primed)
+	responsing_chan := inst.Client.Watch(context.Background(), lcfg.Primed)
 
 	// keep running until this node gets to be primed
 	for {
@@ -381,7 +381,7 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 func (inst *EtcdInstance) initializeJobQueue() error {
 
 	// Setup a key-value store for the queue elements.
-	kvc := clientv3.NewKV(inst.Internal)
+	kvc := clientv3.NewKV(inst.Client)
 
 	// Grab the context.
 	ctx, cancel := context.WithTimeout(context.Background(),
@@ -408,7 +408,7 @@ func (inst *EtcdInstance) initializeJobQueue() error {
 func (inst *EtcdInstance) initializeGlobalJobID() error {
 
 	// Setup a key value storage.
-	kvc := clientv3.NewKV(inst.Internal)
+	kvc := clientv3.NewKV(inst.Client)
 
 	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
@@ -435,7 +435,7 @@ func (inst *EtcdInstance) initializeGlobalJobID() error {
 func (inst *EtcdInstance) initializeProcessStorage() error {
 
 	// setup the key-value store
-	kvc := clientv3.NewKV(inst.Internal)
+	kvc := clientv3.NewKV(inst.Client)
 
 	// grab the current context
 	ctx, cancel := context.WithTimeout(context.Background(),
@@ -500,7 +500,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 	}
 
 	// Grant a lease.
-	lease, err := inst.Internal.Grant(context.TODO(), lcfg.NlistTTL)
+	lease, err := inst.Client.Grant(context.TODO(), lcfg.NlistTTL)
 
 	// if an error occurs, pass it back
 	if err != nil {
@@ -512,7 +512,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// insert the key into etcd
-	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Nodes_dir, inst.node.HostID),
+	_, err = inst.Client.Put(ctx, path.Join(lcfg.Nodes_dir, inst.node.HostID),
 		string(mresult), clientv3.WithLease(lease.ID))
 
 	// cancel the current context as this no longer needs it
@@ -520,7 +520,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 
 	// revoke the lease if an error occurred
 	if err != nil {
-		inst.Internal.Revoke(context.TODO(), lease.ID)
+		inst.Client.Revoke(context.TODO(), lease.ID)
 		return err
 	}
 
@@ -532,7 +532,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// add the context into the k-v storage as well
-	_, err = inst.Internal.Put(ctx, jobQueue, "")
+	_, err = inst.Client.Put(ctx, jobQueue, "")
 
 	// cancel the current context as it is no long needed
 	cancel()
@@ -546,7 +546,7 @@ func (inst *EtcdInstance) addToNodesList() error {
 	go inst.keepKeyAlive(lease)
 
 	// keep tabs on the job queue
-	go inst.watchInternalJobQueue()
+	go inst.watchClientJobQueue()
 
 	// everything works, so pass back nil
 	return nil
@@ -577,7 +577,7 @@ func (inst *EtcdInstance) storeProcess(p Process) error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// insert a key-value into etcd
-	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Processes_dir,
+	_, err = inst.Client.Put(ctx, path.Join(lcfg.Processes_dir,
 		strconv.FormatInt(p.Uuid, 10)), string(mresult))
 
 	// cancel the current context, as it is no longer needed
@@ -605,17 +605,17 @@ func (inst *EtcdInstance) ObtainProcess(Uuid int64) (p *Process, err error) {
 	return inst.ProcessesList[Uuid], nil
 }
 
-//! Allows the node to watch Internal queue, in case there are more jobs.
+//! Allows the node to watch Client queue, in case there are more jobs.
 /*
  * @return    none
  */
-func (inst *EtcdInstance) watchInternalJobQueue() {
+func (inst *EtcdInstance) watchClientJobQueue() {
 
 	// Assemble the job queue path.
 	jobQueue := path.Join(lcfg.Nodes_dir, inst.node.HostID, "jobs")
 
 	// Watch the channel for a response.
-	rchan := inst.Internal.Watch(context.Background(), jobQueue,
+	rchan := inst.Client.Watch(context.Background(), jobQueue,
 		clientv3.WithPrefix())
 
 	for {
@@ -637,7 +637,7 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchInternalJobQueue() --> failed to read job data")
+				stdlog("watchClientJobQueue() --> failed to read job data")
 				stdlog(err.Error())
 				return
 			}
@@ -648,7 +648,7 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchInternalJobQueue() --> unable to start process")
+				stdlog("watchClientJobQueue() --> unable to start process")
 				stdlog(err.Error())
 				return
 			}
@@ -658,7 +658,7 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 
 			// print out the error message, if any
 			if err != nil {
-				stdlog("watchInternalJobQueue() --> could not store process " +
+				stdlog("watchClientJobQueue() --> could not store process " +
 					"data into etcd")
 				stdlog(err.Error())
 				return
@@ -681,7 +681,7 @@ func (inst *EtcdInstance) watchInternalJobQueue() {
 func (inst *EtcdInstance) watchGeneralJobQueue() {
 
 	// Watch the queue in case a new job appears.
-	rch := inst.Internal.Watch(context.Background(), lcfg.Queue_dir,
+	rch := inst.Client.Watch(context.Background(), lcfg.Queue_dir,
 		clientv3.WithPrefix())
 
 	for {
@@ -732,7 +732,7 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// further check, ensure the instance is safe
-	if inst.Internal == nil {
+	if inst.Client == nil {
 		return -1, fmt.Errorf("addToGlobalQueue() --> malformed etcd instance")
 	}
 
@@ -741,7 +741,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Grab the list of queued jobs.
-	response, err := inst.Internal.Get(ctx, lcfg.Queue_dir)
+	response, err := inst.Client.Get(ctx, lcfg.Queue_dir)
 
 	// if debug mode...
 	if lcfg.DebugMode {
@@ -794,14 +794,14 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// attempt to insert it into etcd
-	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Queue_dir,
+	_, err = inst.Client.Put(ctx, path.Join(lcfg.Queue_dir,
 		nextUuidAsStr), string(mresult))
 
 	// if debug mode...
 	if lcfg.DebugMode {
 
 		// Grab the newly inserted job entry.
-		debug_resp, err := inst.Internal.Get(ctx, path.Join(lcfg.Queue_dir,
+		debug_resp, err := inst.Client.Get(ctx, path.Join(lcfg.Queue_dir,
 			nextUuidAsStr))
 
 		// if an error occurs, this failed to insert the new job
@@ -851,7 +851,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Get a response from the primed node.
-	response, err := inst.Internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
+	response, err := inst.Client.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
 	// if debug mode...
@@ -912,7 +912,7 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Insert the job into the job queue of the node.
-	responseToJobAddToNode, err := inst.Internal.Put(ctx,
+	responseToJobAddToNode, err := inst.Client.Put(ctx,
 		path.Join(jobQueue, Uuid), string(mresult))
 
 	// if debug mode...
@@ -962,7 +962,7 @@ func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Use the host id to determine which node.
-	response, err := inst.Internal.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
+	response, err := inst.Client.Get(ctx, path.Join(lcfg.Nodes_dir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
 	// cancel the current context
@@ -1018,7 +1018,7 @@ func (inst *EtcdInstance) putNode(node *Node) error {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// attempt to insert the value into etcd
-	_, err = inst.Internal.Put(ctx, path.Join(lcfg.Nodes_dir,
+	_, err = inst.Client.Put(ctx, path.Join(lcfg.Nodes_dir,
 		node.HostID), string(mresult))
 
 	// cancel the current context
@@ -1045,7 +1045,7 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 		lcfg.EtcdGracePeriodSec*time.Second)
 
 	// Obtain the nodes dir contents.
-	response, err := inst.Internal.Get(ctx, lcfg.Nodes_dir,
+	response, err := inst.Client.Get(ctx, lcfg.Nodes_dir,
 		clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey,
 			clientv3.SortAscend))
 

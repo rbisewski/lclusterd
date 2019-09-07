@@ -74,8 +74,8 @@ Runc is needed too and thus requires a rootfs to work. The fastest way would
 be to export a docker image to /tmp/ and pass along the final location to the
 lclusterd server:
 
+    go get github.com/opencontainers/runc/libcontainer
     mkdir /tmp/rootfs
-
     sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
 
 # Basic Usage Instructions
@@ -151,6 +151,21 @@ Eventually the goal is to have two additional elements to this software:
 Another idea could be a logging or database mechanism to record previous
 jobs, which would allow the end user to examine jobs ran in past days.
 
+# Troubleshooting
+
+If you attempt to run lclusterd and the following error occurs:
+
+```
+panic: /debug/requests is already registered. You may have two independent copies of golang.org/x/net/trace in your binary, trying to maintain separate state. This may involve a vendored copy of golang.org/x/net/trace.
+```
+
+Consider removing the golang trace routines since the CoreOS and the Etcd
+imports can interfere with each other.
+
+```bash
+rm -rf $GOPATH/src/github.com/coreos/etcd/vendor/golang.org/x/net/trace
+rm -rf $GOPATH/src/go.etcd.io/etcd/vendor/golang.org/x/net/trace
+```
 
 # Future Features and Todos List
 

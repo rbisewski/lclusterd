@@ -52,23 +52,33 @@ following command:
 Note that prototypes are regenerated before every build using the standard
 make target, so manual regeneration is not required.
 
+# Environment setup
 
-# Basic Usage Instructions
+Install the protoc binary into your /usr/local/bin/ directory, which can be
+downloaded from here:
+
+    https://github.com/protocolbuffers/protobuf/releases
 
 Etcd is required for holding the key value stores, you can run it as
 follows:
 
     etcd --data-dir /tmp/etcd
 
+This program also needs the gRPC codebase in order to function, install it
+using the following commands:
 
-This program uses runc and as a result needs a rootfs to work. The fastest
-way would be to export a docker image to /tmp/ and pass along the final
-location to the lclusterd server. 
+    go get -u google.golang.org/grpc
+    go get -u github.com/golang/protobuf/protoc-gen-go
+
+Runc is needed too and thus requires a rootfs to work. The fastest way would
+be to export a docker image to /tmp/ and pass along the final location to the
+lclusterd server:
 
     mkdir /tmp/rootfs
 
     sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
 
+# Basic Usage Instructions
 
 To start the server daemon:
 

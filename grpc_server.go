@@ -24,26 +24,16 @@ type LclusterdServer struct {
  */
 func startGRPCServer() error {
 
-	// Listen the defined grpc port.
 	listener, err := net.Listen("tcp", lcfg.GrpcPort)
-
-	// Safety check, make sure an error didn't occur.
 	if err != nil {
 		return err
 	}
 
-	// Initialize gRPC to get a server.
 	remoteProcessCallServer := grpc.NewServer()
-
-	// Mention that the grpc server has now started.
 	log.Println("gRPC server startup successful.")
 
 	// Registering grpc with the lclusterd server
 	pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
-
-	// Set the server to serve on the port that listener is using
 	remoteProcessCallServer.Serve(listener)
-
-	// Everything worked out fine, so pass nil
 	return nil
 }

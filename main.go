@@ -2,6 +2,12 @@
  * File: main.go
  *
  * Description: Contains the main.go routine.
+ *
+ * TODO: right now this program treats `namespace` as a hostname or IPv4
+ * address, rather than an actual network namespace; this ought to be fixed
+ *
+ * TODO: this has odd issues with non-localhost values, something to
+ * consider for future versions
  */
 
 package main
@@ -13,14 +19,6 @@ import (
 	"log"
 	"os"
 )
-
-// The global network namespace.
-//
-// TODO: right now this program treats `namespace` as a hostname or IPv4
-// address, rather than an actual network namespace; this ought to be fixed
-//
-// TODO: this has odd issues with non-localhost values, something to
-// consider for future versions
 
 var (
 	namespace  string
@@ -40,19 +38,17 @@ func main() {
 
 	flag.Parse()
 
-	// Network namespace? Use that then, else default to localhost.
 	if namespace == "" {
 		namespace = "localhost"
 	}
 
-	// TODO: consider checking to ensure the network namespace actually
-	// exists on this system.
-
-	// Ensure that the end-user has provided a rootfs directory location.
 	if rootfs == "" {
 		flag.Usage()
 		return
 	}
+
+	// TODO: consider checking to ensure the network namespace actually
+	// exists on this system.
 
 	// Do a safety check to ensure that the rootfs is actually a
 	// valid POSIX directory location, and that it actually exists.
@@ -64,9 +60,6 @@ func main() {
 	// Attempt to start the etcd server in the background so that the
 	// instances are able to store and obtain key-values.
 	err := libetcd.StartEtcdServerBackgroundProcess(namespace)
-
-	// safety check, ensure that the background etcd service has actually
-	// started
 	if err != nil {
 		fmt.Printf(err.Error())
 		fmt.Printf("The background etcd service could not be started!")
@@ -75,8 +68,6 @@ func main() {
 		return
 	}
 
-	// Otherwise the etcd service started correctly.
-	fmt.Printf(" ")
 	log.Println("Background etcd service started successfully.")
 
 	// Having confirmed that the namespace and rootfs location exists,
@@ -84,19 +75,12 @@ func main() {
 	// the program is ever raised.
 	go loopUtilSIGINT()
 
-	log.Println("lcluster Server has started ")
+	log.Println("lcluster Server has started")
 	log.Println("Network Namespace: " + namespace)
 	log.Println("Rootfs Location: " + rootfs)
 
-	// Grab the hostname, if an error occurs, end this here.
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-
 	// start an Etcd server
-	etcdServerInst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
+	etcdServer, err = libetcd.CreateEtcdInstance(namespace, rootfs)
 	if err != nil {
 		log.Println(" ")
 		log.Println("The following error has occurred: ")
@@ -107,7 +91,11 @@ func main() {
 	}
 
 	// register and init the "node"; i.e. a machine that runs containers
-	etcdServer = etcdServerInst
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 	log.Println("Etcd server startup on " + hostname)
 	etcdServer.InitNode()
 	log.Println("Node manager startup successful.")

@@ -470,21 +470,16 @@ func (inst *EtcdInstance) InitNode() (chan bool, error) {
 
 	// Connect this with the nodes list.
 	err := inst.addToNodesList()
-
-	// if any error, pass it back
 	if err != nil {
 		return nil, err
 	}
 
-	// Assign memory for the channel.
-	notify := make(chan bool, 1)
-
 	// wait around until this node can be primed
+	notify := make(chan bool, 1)
 	go inst.primeThisNode(notify)
 
 	// Grab the context, as it is required to manage the nodes.
-	ctx, cancel := context.WithTimeout(context.Background(),
-		lcfg.PrimedTTL*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), lcfg.PrimedTTL*time.Second)
 
 	// Attempt to prime the node.
 	err = inst.primedLock(notify, ctx)
@@ -492,12 +487,10 @@ func (inst *EtcdInstance) InitNode() (chan bool, error) {
 	// Cancel the current context.
 	cancel()
 
-	// If any error, pass it back.
 	if err != nil {
 		return nil, err
 	}
 
-	// Otherwise hand a ref to the notification channel.
 	return notify, nil
 }
 
@@ -509,18 +502,8 @@ func (inst *EtcdInstance) addToNodesList() error {
 
 	// Marshal a given node.
 	mresult, err := json.Marshal(inst.node)
-
-	// if an error occurred, print it out
 	if err != nil {
 		log.Println(err.Error())
-		return err
-	}
-
-	// Grant a lease.
-	lease, err := inst.Client.Grant(context.TODO(), lcfg.NlistTTL)
-
-	// if an error occurs, pass it back
-	if err != nil {
 		return err
 	}
 
@@ -528,18 +511,24 @@ func (inst *EtcdInstance) addToNodesList() error {
 	ctx, cancel := context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
+	// Grant a lease.
+	lease, err := inst.Client.Grant(ctx, lcfg.NlistTTL)
+	if err != nil {
+		return err
+	}
+
 	// insert the key into etcd
 	_, err = inst.Client.Put(ctx, path.Join(lcfg.NodesDir, inst.node.HostID),
 		string(mresult), clientv3.WithLease(lease.ID))
 
-	// cancel the current context as this no longer needs it
-	cancel()
-
 	// revoke the lease if an error occurred
 	if err != nil {
-		inst.Client.Revoke(context.TODO(), lease.ID)
+		inst.Client.Revoke(ctx, lease.ID)
 		return err
 	}
+
+	// cancel the current context as this no longer needs it
+	cancel()
 
 	// Setup a local jobs queue for the node.
 	jobQueue := path.Join(lcfg.NodesDir, inst.node.HostID, "jobs")

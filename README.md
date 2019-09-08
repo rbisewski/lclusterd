@@ -37,17 +37,23 @@ and I will make note of it in future versions of this readme.
 
 You can obtain the codebase via git:
 
-    git clone https://github.com/rbisewski/lclusterd
+```bash
+git clone https://github.com/rbisewski/lclusterd
+```
 
 Afterwards you can build both the server binary (lclusterd) and the client
 binary (lclusterc) as follows:
 
-    make
+```bash
+make
+```
 
 If you need to make changes to the PB prototype file, you can also run the
 following command:
 
-    make regen_proto
+```bash
+make regen_proto
+```
 
 Note that prototypes are regenerated before every build using the standard
 make target, so manual regeneration is not required.
@@ -57,32 +63,46 @@ make target, so manual regeneration is not required.
 Install the protoc binary into your /usr/local/bin/ directory, which can be
 downloaded from here:
 
-    https://github.com/protocolbuffers/protobuf/releases
+```bash
+https://github.com/protocolbuffers/protobuf/releases
+```
 
 Etcd is required for holding the key value stores, you can run it as
-follows:
+below. Alternatively, if you already have a Kubernetes cluster that uses
+etcd running on port 2380, then you are all set.
 
-    etcd --data-dir /tmp/etcd
+```bash
+etcd --data-dir /tmp/etcd
+```
 
 This program also needs the gRPC codebase in order to function, install it
 using the following commands:
 
-    go get -u google.golang.org/grpc
-    go get -u github.com/golang/protobuf/protoc-gen-go
+```bash
+go get -u google.golang.org/grpc
+go get -u github.com/golang/protobuf/protoc-gen-go
+```
 
 Runc is needed too and thus requires a rootfs to work. The fastest way would
 be to export a docker image to /tmp/ and pass along the final location to the
 lclusterd server:
 
-    go get github.com/opencontainers/runc/libcontainer
-    mkdir /tmp/rootfs
-    sudo docker export 719ae7c313c9 | tar xvfC - /tmp/rootfs
+```bash
+go get github.com/opencontainers/runc/libcontainer
+docker pull ubuntu:latest
+docker create --name ubuntu-husk ubuntu:latest
+sudo mkdir -p /lclusterd/rootfs
+docker export ubuntu-husk | tar xvfC - /lclusterd/rootfs
+docker rm ubuntu-husk
+```
 
 # Basic Usage Instructions
 
 To start the server daemon:
 
-    sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
+```bash
+sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
+```
 
 This program will default to localhost, however, you can also specify the
 network namespace using the --namespace argument flag noted above.
@@ -93,7 +113,9 @@ location as well, which can be any safe POSIX location.
 
 To add a job to the server, you can use the addjob argument like so:
 
-    lclusterc --addjob='bash command'
+```bash
+lclusterc --addjob='bash command'
+```
 
 Where 'bash command' is the terminal command to be executed.
 
@@ -101,14 +123,18 @@ Where 'bash command' is the terminal command to be executed.
 To check on the current status of a job on the server, you can use the
 checkjob flag as such:
 
-    lclusterc --checkjob=uuid
+```bash
+lclusterc --checkjob=uuid
+```
 
 Where uuid is the assigned number of the job in question.
 
 
 To remove a job from the server, use the removejob argument:
 
-    lclusterc --removejob=uuid
+```bash
+lclusterc --removejob=uuid
+```
 
 Where uuid is the assigned number of the job in question.
 

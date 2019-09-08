@@ -14,10 +14,6 @@ import (
 	"os"
 )
 
-/*
- * Globals
- */
-
 // The global network namespace.
 //
 // TODO: right now this program treats `namespace` as a hostname or IPv4
@@ -25,29 +21,23 @@ import (
 //
 // TODO: this has odd issues with non-localhost values, something to
 // consider for future versions
-//
-var namespace string
 
-// The global etcd server.
-var etcdServer *libetcd.EtcdInstance
+var (
+	namespace  string
+	etcdServer *libetcd.EtcdInstance
+	rootfs     string
+)
 
-// The global rootfs location; it gets defined via commandline argument.
-var rootfs string
+func init() {
+	flag.StringVar(&namespace, "namespace", "localhost",
+		"Hostname or IP address")
 
-//! The program main function.
-/*
- * @return    none
- */
+	flag.StringVar(&rootfs, "rootfs", "",
+		"Rootfs POSIX directory location for runc")
+}
+
 func main() {
 
-	// Ensure that no more than 2 arguments are given, else print the usage
-	// information.
-	if flag.NArg() > 2 {
-		flag.Usage()
-		return
-	}
-
-	// Parse the given argument flags.
 	flag.Parse()
 
 	// Network namespace? Use that then, else default to localhost.
@@ -94,17 +84,8 @@ func main() {
 	// the program is ever raised.
 	go loopUtilSIGINT()
 
-	// Give end-user a message stating that the lclusterd server started
-	log.Println(" ")
-	log.Println("-----------------------------")
-	log.Println(" lcluster Server has started ")
-	log.Println("-----------------------------")
-	log.Println(" ")
-
-	// Print out some informative information about how the namespace.
+	log.Println("lcluster Server has started ")
 	log.Println("Network Namespace: " + namespace)
-
-	// Print out some informative information about how the rootfs dir.
 	log.Println("Rootfs Location: " + rootfs)
 
 	// Grab the hostname, if an error occurs, end this here.
@@ -114,12 +95,8 @@ func main() {
 		return
 	}
 
-	// Go ahead and start an etcd server instance.
+	// start an Etcd server
 	etcdServerInst, err := libetcd.CreateEtcdInstance(namespace, rootfs)
-
-	// Safety check, ensure that no errors have occurred during startup of
-	// the EtcdServer. If it fails to start, go ahead and terminate the
-	// program.
 	if err != nil {
 		log.Println(" ")
 		log.Println("The following error has occurred: ")
@@ -129,38 +106,17 @@ func main() {
 		return
 	}
 
-	// Escalate the etcd server instance to become the global etcd server.
+	// register and init the "node"; i.e. a machine that runs containers
 	etcdServer = etcdServerInst
-
-	// Mention that the etcd server has now started.
 	log.Println("Etcd server startup on " + hostname)
-
-	// Have the etcd server initialize the nodes, with a "primed" node that
-	// functions as a sort of "manager" for the other nodes
 	etcdServer.InitNode()
-
-	// Mention that the node manager has now started.
 	log.Println("Node manager startup successful.")
 
 	// In order to register all of the elements in the cluster, this grpc
 	// server needs to exist to have something they can return back to.
 	err = startGRPCServer()
-
-	// if an error, print it out
 	if err != nil {
 		fmt.Printf(err.Error())
 		fmt.Printf("Error: Unable to start gRPC server on the requested port!")
 	}
-}
-
-// Initialize the arg flags.
-func init() {
-
-	// Set a definition for the namespace flag.
-	flag.StringVar(&namespace, "namespace", "localhost",
-		"Hostname or IP address")
-
-	// Location of the intended rootfs to run the runc libcontainer instances.
-	flag.StringVar(&rootfs, "rootfs", "",
-		"Rootfs POSIX directory location for runc")
 }

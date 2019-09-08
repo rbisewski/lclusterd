@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&namespace, "namespace", "localhost",
+	flag.StringVar(&namespace, "namespace", "127.0.0.1",
 		"Hostname or IP address")
 
 	flag.StringVar(&rootfs, "rootfs", "",
@@ -39,7 +39,7 @@ func main() {
 	flag.Parse()
 
 	if namespace == "" {
-		namespace = "localhost"
+		namespace = "127.0.0.1"
 	}
 
 	if rootfs == "" {

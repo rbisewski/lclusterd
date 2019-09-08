@@ -12,7 +12,7 @@ const (
 	DebugMode = true
 
 	// Location of the etcd binary, as a POSIX dir path.
-	EtcdBinaryPath = "/usr/bin/etcd"
+	EtcdBinaryPath = "/usr/local/bin/etcd"
 
 	// Storage location of the etcd server data dir; in the function
 	// "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a

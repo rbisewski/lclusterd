@@ -27,28 +27,22 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 	// Input validation.
 	if len(cmd) < 1 {
 		err := "Error: Given command is empty."
-		return pb.StartJobResponse{Pid: lcfg.SjrFailure, Error: err},
-			fmt.Errorf(err)
+		return pb.StartJobResponse{Pid: lcfg.SjrFailure, Error: err}, fmt.Errorf(err)
 	}
 
 	// Dial a connection to the grpc server.
 	connection, err := grpc.Dial(lcfg.GrpcServerAddr+lcfg.GrpcPort,
 		grpc.WithInsecure())
 
-	// Safety check, ensure no errors have occurred.
 	if err != nil {
 		return pb.StartJobResponse{Pid: lcfg.SjrFailure,
 			Error: err.Error()}, err
 	}
-
-	// Defer the connection for the time being, but eventually it will be
-	// closed once we've finished with it.
 	defer connection.Close()
 
 	// Create an lcluster client
 	lclusterClient := pb.NewLclusterdClient(connection)
 
-	// Start a new job request using the data obtained above.
 	request := pb.StartJobRequest{
 		Path:     cmd,
 		Args:     []string{lcfg.Sh, cmd},
@@ -56,19 +50,17 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 		Hostname: lcfg.GrpcServerAddr,
 	}
 
-	// Grab the current background context.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-
 	// Using the new job request defined above, go ahead and start the
-	// job.
+	// job. Retain a pointer to it so that it can be cancelled at some point.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	response, err := lclusterClient.StartJob(ctx, &request)
-
-	// Cancel the current context since this has either generated a
-	// response or an error.
 	cancel()
 
-	// return the server response and the error
-	return *response, err
+        if err != nil {
+            return pb.StartJobResponse{}, err
+        }
+
+	return *response, nil
 }
 
 //! Function so client can check a job to the server.

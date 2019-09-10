@@ -71,21 +71,14 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	// Obtain the response, which contains the list of queued jobs.
 	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.QueueDir,
 		strconv.FormatInt(cjr.Pid, 10)))
-
-	// if an error occurs here, pass back a return code of 0, since for
-	// whatever reason, the server is unable to query jobs at this time
 	if err != nil || response == nil {
+                // lcfg.CjrUnknown = 0
 		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
 	}
 
 	// Cycle through all of the process refs and check if the job is active.
 	for _, p := range etcdServer.ProcessesList {
-
-		// if a job exists with the given pid
 		if p.Uuid == cjr.Pid {
-
-			// pass back a return code of 3, stating that the process is
-			// present and actively running on a node.
 			return &pb.CheckJobResponse{Rc: lcfg.CjrProcessActive}, nil
 		}
 	}
@@ -112,13 +105,10 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 func (s *LclusterdServer) StopJob(ctx context.Context,
 	request *pb.StopJobRequest) (*pb.StopJobResponse, error) {
 
-	// Create a response husk for use later on.
 	response := &pb.StopJobResponse{}
 
 	// Request that the etcd server hand back the process.
 	process, err := etcdServer.ObtainProcess(request.Pid)
-
-	// if any error occurred, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		response.Rc = lcfg.SjrFailure
@@ -136,8 +126,6 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 
 	// attempt to stop the given process
 	err = etcdServer.StopProcess(*process)
-
-	// if any error occurred while halting the process, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		response.Rc = lcfg.SjrFailure
@@ -145,8 +133,6 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 		return response, err
 	}
 
-	// otherwise the process was successfully halted, go ahead and pass
-	// back a success
 	response.Rc = lcfg.SjrSuccess
 	return response, nil
 }

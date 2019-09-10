@@ -84,10 +84,7 @@ func addJobToServer(cmd string) int {
  */
 func checkJobOnServer(uuid int64) int {
 
-	// Connect to the server and check if the job is still running.
 	response, err := libclient.HaveClientCheckJobOnServer(uuid)
-
-	// Safety check, ensure that no error has occurred.
 	if err != nil {
 		fmt.Printf(err.Error())
 		return 1
@@ -96,29 +93,24 @@ func checkJobOnServer(uuid int64) int {
 	// If an internal server-side error has occurred...
 	switch response.Rc {
 
-	// Corrupted server / input.
 	case lcfg.CjrCorruptedServerInput:
 		fmt.Printf("An internal server-side error has occurred.\n")
 		return 1
 
-	// Unknown job status.
 	case lcfg.CjrUnknown:
 		fmt.Printf("The job %d appears to have an unknown "+
 			"status.\nConsider contacting the server "+
 			"operator.\n", uuid)
 		return 0
 
-	// Process does not exist.
 	case lcfg.CjrProcessNotExist:
 		fmt.Printf("The job %d is not present.\n", uuid)
 		return 0
 
-	// Process is queued.
 	case lcfg.CjrProcessQueued:
 		fmt.Printf("The job %d is queued.\n", uuid)
 		return 0
 
-		// Job is currently running
 	case lcfg.CjrProcessActive:
 		fmt.Printf("The job %d is currently active.\n", uuid)
 		return 0
@@ -153,8 +145,7 @@ func removeJobFromServer(uuid int64) int {
 	switch response.Rc {
 
 	case lcfg.SjrFailure:
-		fmt.Printf("Server has responded with the following error: \n%s\n",
-			response.Error)
+		fmt.Printf("Server has responded with the following error: \n%s\n", response.Error)
 		return 1
 
 	case lcfg.SjrDoesNotExist:

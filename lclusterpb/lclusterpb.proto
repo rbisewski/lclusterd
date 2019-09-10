@@ -15,7 +15,6 @@ service Lclusterd {
     rpc StopJob (StopJobRequest) returns (StopJobResponse) {}
 }
 
-// The StartJobRequest definition.
 message StartJobRequest {
 
     // Description
@@ -33,7 +32,6 @@ message StartJobRequest {
     int64 pid            = 6;
 }
 
-// The StartJobResponse definition.
 message StartJobResponse {
 
     // Process id, can be -1 if an error occurs
@@ -43,14 +41,12 @@ message StartJobResponse {
     string error = 2;
 }
 
-// The CheckJobRequest definition.
 message CheckJobRequest {
 
     // Process id of the job intending to check
     int64 pid = 1;
 }
 
-// The CheckJobResponse definition.
 message CheckJobResponse {
 
     // CheckJobResponse response code, see the lcfg package for more details
@@ -60,14 +56,12 @@ message CheckJobResponse {
     string error = 2;
 }
 
-// The StopJobRequest definition.
 message StopJobRequest {
 
     // Process id of the job intending to stop
     int64 pid = 1;
 }
 
-// The StopJobResponse definition.
 message StopJobResponse {
 
     // StopJobResponse response code, see the lcfg package for more details

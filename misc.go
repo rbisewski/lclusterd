@@ -22,20 +22,15 @@ import (
  */
 func directoryExists(path string) bool {
 
-	// input validation
 	if len(path) < 1 {
 		return false
 	}
 
-	// attempt to read the directory and its contents, if any
 	_, err := ioutil.ReadDir(path)
-
-	// if an error occurred, then assume this is probably not a directory
 	if err != nil {
 		return false
 	}
 
-	// otherwise this succeeded, in which case return true
 	return true
 }
 
@@ -45,18 +40,10 @@ func directoryExists(path string) bool {
  */
 func loopUtilSIGINT() {
 
-	// Define a new variable for dealing with OS signals.
 	checker := make(chan os.Signal, 1)
-
-	// Make it notify the end-user upon receiving a signal.
 	signal.Notify(checker, os.Interrupt)
-
-	// Activate the checker
 	<-checker
 
-	// Tell stderr what occurred.
 	fmt.Printf("SIGINT detected, terminating program...\n")
-
-	// Send the exit.
 	os.Exit(0)
 }

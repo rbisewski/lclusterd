@@ -72,7 +72,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.QueueDir,
 		strconv.FormatInt(cjr.Pid, 10)))
 	if err != nil || response == nil {
-                // lcfg.CjrUnknown = 0
+		// lcfg.CjrUnknown = 0
 		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
 	}
 

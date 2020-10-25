@@ -60,40 +60,17 @@ make target, so manual regeneration is not required.
 
 # Environment setup
 
-Install the protoc binary into your /usr/local/bin/ directory, which can be
-downloaded from here:
+This applications requires a number of components in order to actually run:
+
+* gRPC
+* etcd
+* protobuf library includes
+* UNIX filesystem-like structure to be mounted as a rootfs
+
+That said, an easy Makefile target has been provided to prepare a system:
 
 ```bash
-https://github.com/protocolbuffers/protobuf/releases
-```
-
-Etcd is required for holding the key value stores, you can run it as
-below. Alternatively, if you already have a Kubernetes cluster that uses
-etcd running on port 2380, then you are all set.
-
-```bash
-etcd --data-dir /tmp/etcd
-```
-
-This program also needs the gRPC codebase in order to function, install it
-using the following commands:
-
-```bash
-go get -u google.golang.org/grpc
-go get -u github.com/golang/protobuf/protoc-gen-go
-```
-
-Runc is needed too and thus requires a rootfs to work. The fastest way would
-be to export a docker image to /tmp/ and pass along the final location to the
-lclusterd server:
-
-```bash
-go get github.com/opencontainers/runc/libcontainer
-docker pull ubuntu:latest
-docker create --name ubuntu-husk ubuntu:latest
-sudo mkdir -p /lclusterd/rootfs
-docker export ubuntu-husk | tar xvfC - /lclusterd/rootfs
-docker rm ubuntu-husk
+make prep
 ```
 
 # Basic Usage Instructions
@@ -219,6 +196,6 @@ functionality of this program:
 This was created by Robert Bisewski at Ibis Cybernetics. For more
 information, please contact us at:
 
-* Website -> www.ibiscybernetics.com
+* Website: www.ibiscybernetics.com
 
-* Email -> contact@ibiscybernetics.com
+* Email: contact@ibiscybernetics.com

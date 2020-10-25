@@ -43,7 +43,7 @@ make prep
 # Installation
 
 Having prepared your system environment as per the above section, you can
-build both the server binary (lclusterd) and the client binary (lclusterc)
+build both the server binary (lclusterd) and the client binary (lclient)
 as follows:
 
 ```bash
@@ -78,7 +78,7 @@ location as well, which can be any safe POSIX location.
 To add a job to the server, you can use the addjob argument like so:
 
 ```bash
-lclusterc --addjob='bash command'
+lclient --addjob='bash command'
 ```
 
 Where 'bash command' is the terminal command to be executed.
@@ -88,7 +88,7 @@ To check on the current status of a job on the server, you can use the
 checkjob flag as such:
 
 ```bash
-lclusterc --checkjob=uuid
+lclient --checkjob=uuid
 ```
 
 Where uuid is the assigned number of the job in question.
@@ -97,7 +97,7 @@ Where uuid is the assigned number of the job in question.
 To remove a job from the server, use the removejob argument:
 
 ```bash
-lclusterc --removejob=uuid
+lclient --removejob=uuid
 ```
 
 Where uuid is the assigned number of the job in question.
@@ -125,7 +125,7 @@ the server is 'locked-in' to job provisioning.
 After running make this program creates the following binaries:
 
 * lclusterd --> server app
-* lclusterc --> client app
+* lclient --> client app
 
 The server requires that etcd is installed on the location mentioned in the
 config.go configuration file, as per the 'EtcdBinaryPath' variable. You may

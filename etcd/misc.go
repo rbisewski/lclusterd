@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"../../lcfg"
+	"../lcfg"
 )
 
 //! Spawns a pseudo-random uuid based on /dev/random.

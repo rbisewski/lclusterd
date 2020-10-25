@@ -14,7 +14,7 @@ import (
 	"log"
 	"os"
 
-	libetcd "./lib/etcd"
+	libetcd "./etcd"
 )
 
 var (

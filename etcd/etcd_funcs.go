@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"../../lcfg"
-	pb "../../lclusterpb"
+	"../lcfg"
+	pb "../lclusterpb"
 	clientv3 "go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
 	"golang.org/x/net/context"

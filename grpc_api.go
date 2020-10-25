@@ -6,9 +6,9 @@ import (
 	"path"
 	"strconv"
 
+	libetcd "./etcd"
 	"./lcfg"
 	pb "./lclusterpb"
-	libetcd "./lib/etcd"
 	"golang.org/x/net/context"
 )
 

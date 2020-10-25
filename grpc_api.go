@@ -6,8 +6,8 @@ import (
 	"path"
 	"strconv"
 
+	"./config"
 	libetcd "./etcd"
-	"./lcfg"
 	pb "./lclusterpb"
 	"golang.org/x/net/context"
 )
@@ -48,20 +48,20 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	cjr *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
 
 	if cjr == nil || cjr.Pid < 1 {
-		return &pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput},
+		return &pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput},
 			fmt.Errorf("CheckJob() --> invalid input")
 	}
 
-	response, err := etcdServer.Client.Get(ctx, path.Join(lcfg.QueueDir,
+	response, err := etcdServer.Client.Get(ctx, path.Join(config.QueueDir,
 		strconv.FormatInt(cjr.Pid, 10)))
 	if err != nil || response == nil {
-		return &pb.CheckJobResponse{Rc: lcfg.CjrUnknown}, err
+		return &pb.CheckJobResponse{Rc: config.CjrUnknown}, err
 	}
 
 	// Cycle through all of the process refs and check if the job is active.
 	for _, p := range etcdServer.ProcessesList {
 		if p.Uuid == cjr.Pid {
-			return &pb.CheckJobResponse{Rc: lcfg.CjrProcessActive}, nil
+			return &pb.CheckJobResponse{Rc: config.CjrProcessActive}, nil
 		}
 	}
 
@@ -73,7 +73,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	// TODO: suggest a feature where-by the program might one day keep
 	//       track of past jobs via logging or database.
 	//
-	return &pb.CheckJobResponse{Rc: lcfg.CjrProcessNotExist}, nil
+	return &pb.CheckJobResponse{Rc: config.CjrProcessNotExist}, nil
 }
 
 // StopJob ... the gRPC API function to stop a job.
@@ -92,7 +92,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	process, err := etcdServer.ObtainProcess(request.Pid)
 	if err != nil {
 		log.Println(err.Error())
-		response.Rc = lcfg.SjrFailure
+		response.Rc = config.SjrFailure
 		response.Error = err.Error()
 		return response, err
 	}
@@ -100,7 +100,7 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	if process == nil || process.Proc == nil {
 		log.Println("No such process exists with Uuid: " +
 			strconv.FormatInt(request.Pid, 10))
-		response.Rc = lcfg.SjrDoesNotExist
+		response.Rc = config.SjrDoesNotExist
 		return response, nil
 	}
 
@@ -108,11 +108,11 @@ func (s *LclusterdServer) StopJob(ctx context.Context,
 	err = etcdServer.StopProcess(*process)
 	if err != nil {
 		log.Println(err.Error())
-		response.Rc = lcfg.SjrFailure
+		response.Rc = config.SjrFailure
 		response.Error = err.Error()
 		return response, err
 	}
 
-	response.Rc = lcfg.SjrSuccess
+	response.Rc = config.SjrSuccess
 	return response, nil
 }

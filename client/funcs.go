@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"../lcfg"
+	"../config"
 	pb "../lclusterpb"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
@@ -21,15 +21,15 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 
 	if len(cmd) < 1 {
 		err := "Error: Given command is empty."
-		return pb.StartJobResponse{Pid: lcfg.SjrFailure, Error: err}, fmt.Errorf(err)
+		return pb.StartJobResponse{Pid: config.SjrFailure, Error: err}, fmt.Errorf(err)
 	}
 
 	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr+lcfg.GrpcPort,
+	connection, err := grpc.Dial(config.GrpcServerAddr+config.GrpcPort,
 		grpc.WithInsecure())
 
 	if err != nil {
-		return pb.StartJobResponse{Pid: lcfg.SjrFailure,
+		return pb.StartJobResponse{Pid: config.SjrFailure,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()
@@ -39,9 +39,9 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 
 	request := pb.StartJobRequest{
 		Path:     cmd,
-		Args:     []string{lcfg.Sh, cmd},
+		Args:     []string{config.Sh, cmd},
 		Env:      []string{"PATH=/bin"},
-		Hostname: lcfg.GrpcServerAddr,
+		Hostname: config.GrpcServerAddr,
 	}
 
 	// Using the new job request defined above, go ahead and start the
@@ -68,14 +68,14 @@ func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
 
 	if uuid < 1 {
 		err := "Invalid uuid input given."
-		return pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput,
+		return pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
 			Error: err}, fmt.Errorf(err)
 	}
 
 	// Dial a connection to the grpc server.
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr+lcfg.GrpcPort, grpc.WithInsecure())
+	connection, err := grpc.Dial(config.GrpcServerAddr+config.GrpcPort, grpc.WithInsecure())
 	if err != nil {
-		return pb.CheckJobResponse{Rc: lcfg.CjrCorruptedServerInput,
+		return pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()
@@ -102,13 +102,13 @@ func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
 
 	if uuid < 1 {
 		err := "Invalid input."
-		return pb.StopJobResponse{Rc: lcfg.SjrFailure, Error: err},
+		return pb.StopJobResponse{Rc: config.SjrFailure, Error: err},
 			fmt.Errorf(err)
 	}
 
-	connection, err := grpc.Dial(lcfg.GrpcServerAddr+lcfg.GrpcPort, grpc.WithInsecure())
+	connection, err := grpc.Dial(config.GrpcServerAddr+config.GrpcPort, grpc.WithInsecure())
 	if err != nil {
-		return pb.StopJobResponse{Rc: lcfg.SjrFailure,
+		return pb.StopJobResponse{Rc: config.SjrFailure,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()

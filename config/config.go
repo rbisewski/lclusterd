@@ -1,4 +1,4 @@
-package lcfg
+package config
 
 const (
 	// DebugMode ... display debug message to stdout

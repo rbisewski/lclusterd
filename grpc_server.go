@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	"./lcfg"
+	"./config"
 	pb "./lclusterpb"
 	grpc "google.golang.org/grpc"
 )
@@ -19,7 +19,7 @@ type LclusterdServer struct {
  */
 func startGRPCServer() error {
 
-	listener, err := net.Listen("tcp", lcfg.GrpcPort)
+	listener, err := net.Listen("tcp", config.GrpcPort)
 	if err != nil {
 		return err
 	}

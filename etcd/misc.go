@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"../lcfg"
+	"../config"
 )
 
 //! Spawns a pseudo-random uuid based on /dev/random.
@@ -70,7 +70,7 @@ func debugf(ascii string) {
 	}
 
 	// ensure debug mode is actually on
-	if !lcfg.DebugMode {
+	if !config.DebugMode {
 		return
 	}
 

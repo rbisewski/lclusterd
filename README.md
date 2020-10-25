@@ -16,7 +16,7 @@ Note that while this is a work in progress, it does somewhat partially work.
 The program itself was designed around a standard Debian Linux environment,
 with the following requirements:
 
-* docker
+* docker (not actually needed, but as a quick method of assembling a rootfs)
 * etcd 
 * libcontainer 
 * linux kernel 3.19+
@@ -40,7 +40,7 @@ You can obtain the codebase via git:
 git clone https://github.com/rbisewski/lclusterd
 ```
 
-As noted above, this applications requires a number of components in order
+As noted above, this application requires a number of components in order
 to actually run:
 
 * gRPC
@@ -142,7 +142,7 @@ After running make this program creates the following binaries:
 * lclusterc --> client app
 
 The server requires that etcd is installed on the location mentioned in the
-lcfg.go configuration file, as per the 'EtcdBinaryPath' variable. You may
+config.go configuration file, as per the 'EtcdBinaryPath' variable. You may
 need to adjust this value to match the current location of your etcd
 binary.
 

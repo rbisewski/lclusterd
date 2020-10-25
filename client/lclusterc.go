@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"../lcfg"
+	"../config"
 )
 
 var (
@@ -86,25 +86,25 @@ func checkJobOnServer(uuid int64) int {
 	// If an internal server-side error has occurred...
 	switch response.Rc {
 
-	case lcfg.CjrCorruptedServerInput:
+	case config.CjrCorruptedServerInput:
 		fmt.Printf("An internal server-side error has occurred.\n")
 		return 1
 
-	case lcfg.CjrUnknown:
+	case config.CjrUnknown:
 		fmt.Printf("The job %d appears to have an unknown "+
 			"status.\nConsider contacting the server "+
 			"operator.\n", uuid)
 		return 0
 
-	case lcfg.CjrProcessNotExist:
+	case config.CjrProcessNotExist:
 		fmt.Printf("The job %d is not present.\n", uuid)
 		return 0
 
-	case lcfg.CjrProcessQueued:
+	case config.CjrProcessQueued:
 		fmt.Printf("The job %d is queued.\n", uuid)
 		return 0
 
-	case lcfg.CjrProcessActive:
+	case config.CjrProcessActive:
 		fmt.Printf("The job %d is currently active.\n", uuid)
 		return 0
 	}
@@ -134,15 +134,15 @@ func removeJobFromServer(uuid int64) int {
 
 	switch response.Rc {
 
-	case lcfg.SjrFailure:
+	case config.SjrFailure:
 		fmt.Printf("Server has responded with the following error: \n%s\n", response.Error)
 		return 1
 
-	case lcfg.SjrDoesNotExist:
+	case config.SjrDoesNotExist:
 		fmt.Printf("No such process exists with given uuid: %d\n", uuid)
 		return 0
 
-	case lcfg.SjrSuccess:
+	case config.SjrSuccess:
 		fmt.Printf("Successfully removed job %d\n", uuid)
 		return 0
 	}

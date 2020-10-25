@@ -3,7 +3,7 @@ package libetcd
 import (
 	"syscall"
 
-	"../lcfg"
+	"../config"
 	"github.com/opencontainers/runc/libcontainer/configs"
 )
 
@@ -26,11 +26,11 @@ func GenerateRuncConfig(containerName string, hostname string, rootfs string) *c
 		Rootfs: rootfs,
 
 		Capabilities: &configs.Capabilities{
-			Bounding:    lcfg.LclustercCaps,
-			Permitted:   lcfg.LclustercCaps,
-			Inheritable: lcfg.LclustercCaps,
-			Ambient:     lcfg.LclustercCaps,
-			Effective:   lcfg.LclustercCaps,
+			Bounding:    config.LclustercCaps,
+			Permitted:   config.LclustercCaps,
+			Inheritable: config.LclustercCaps,
+			Ambient:     config.LclustercCaps,
+			Effective:   config.LclustercCaps,
 		},
 
 		Namespaces: configs.Namespaces([]configs.Namespace{

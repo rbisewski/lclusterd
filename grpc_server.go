@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"./config"
-	pb "./jobpb"
+	jobpb "./jobpb"
 	grpc "google.golang.org/grpc"
 )
 
@@ -14,9 +14,6 @@ type LclusterdServer struct {
 }
 
 // startGRPCServer ... start a grpc server instance.
-/*
- * @return    error    error message, if any
- */
 func startGRPCServer() error {
 
 	listener, err := net.Listen("tcp", config.GrpcPort)
@@ -28,7 +25,7 @@ func startGRPCServer() error {
 	log.Println("gRPC server startup successful.")
 
 	// Registering grpc with the lclusterd server
-	pb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
+	jobpb.RegisterLclusterdServer(remoteProcessCallServer, &LclusterdServer{})
 	remoteProcessCallServer.Serve(listener)
 	return nil
 }

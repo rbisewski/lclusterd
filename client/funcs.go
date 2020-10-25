@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"../config"
-	pb "../jobpb"
+	jobpb "../jobpb"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
@@ -17,11 +17,11 @@ import (
  * @return   StartJobResponse    response from server
  * @return   error               error message, if any
  */
-func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
+func HaveClientAddJobToServer(cmd string) (jobpb.StartJobResponse, error) {
 
 	if len(cmd) < 1 {
 		err := "Error: Given command is empty."
-		return pb.StartJobResponse{Pid: config.SjrFailure, Error: err}, fmt.Errorf(err)
+		return jobpb.StartJobResponse{Pid: config.SjrFailure, Error: err}, fmt.Errorf(err)
 	}
 
 	// Dial a connection to the grpc server.
@@ -29,15 +29,15 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 		grpc.WithInsecure())
 
 	if err != nil {
-		return pb.StartJobResponse{Pid: config.SjrFailure,
+		return jobpb.StartJobResponse{Pid: config.SjrFailure,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()
 
 	// Create an lcluster client
-	lclusterClient := pb.NewLclusterdClient(connection)
+	lclusterClient := jobpb.NewLclusterdClient(connection)
 
-	request := pb.StartJobRequest{
+	request := jobpb.StartJobRequest{
 		Path:     cmd,
 		Args:     []string{config.Sh, cmd},
 		Env:      []string{"PATH=/bin"},
@@ -51,7 +51,7 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 	cancel()
 
 	if err != nil {
-		return pb.StartJobResponse{}, err
+		return jobpb.StartJobResponse{}, err
 	}
 
 	return *response, nil
@@ -64,25 +64,25 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
  * @return   CheckJobResponse    response from server
  * @return   error               error message, if any
  */
-func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
+func HaveClientCheckJobOnServer(uuid int64) (jobpb.CheckJobResponse, error) {
 
 	if uuid < 1 {
 		err := "Invalid uuid input given."
-		return pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
+		return jobpb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
 			Error: err}, fmt.Errorf(err)
 	}
 
 	// Dial a connection to the grpc server.
 	connection, err := grpc.Dial(config.GrpcServerAddr+config.GrpcPort, grpc.WithInsecure())
 	if err != nil {
-		return pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
+		return jobpb.CheckJobResponse{Rc: config.CjrCorruptedServerInput,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()
 
-	lclusterClient := pb.NewLclusterdClient(connection)
+	lclusterClient := jobpb.NewLclusterdClient(connection)
 
-	request := pb.CheckJobRequest{Pid: uuid}
+	request := jobpb.CheckJobRequest{Pid: uuid}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	response, err := lclusterClient.CheckJob(ctx, &request)
@@ -98,24 +98,24 @@ func HaveClientCheckJobOnServer(uuid int64) (pb.CheckJobResponse, error) {
  * @return   StopJobResponse    response from server
  * @return   error              error message, if any
  */
-func HaveClientStopJobOnServer(uuid int64) (pb.StopJobResponse, error) {
+func HaveClientStopJobOnServer(uuid int64) (jobpb.StopJobResponse, error) {
 
 	if uuid < 1 {
 		err := "Invalid input."
-		return pb.StopJobResponse{Rc: config.SjrFailure, Error: err},
+		return jobpb.StopJobResponse{Rc: config.SjrFailure, Error: err},
 			fmt.Errorf(err)
 	}
 
 	connection, err := grpc.Dial(config.GrpcServerAddr+config.GrpcPort, grpc.WithInsecure())
 	if err != nil {
-		return pb.StopJobResponse{Rc: config.SjrFailure,
+		return jobpb.StopJobResponse{Rc: config.SjrFailure,
 			Error: err.Error()}, err
 	}
 	defer connection.Close()
 
-	lclusterClient := pb.NewLclusterdClient(connection)
+	lclusterClient := jobpb.NewLclusterdClient(connection)
 
-	request := pb.StopJobRequest{Pid: uuid}
+	request := jobpb.StopJobRequest{Pid: uuid}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	response, err := lclusterClient.StopJob(ctx, &request)

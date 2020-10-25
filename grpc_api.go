@@ -8,7 +8,7 @@ import (
 
 	"./config"
 	libetcd "./etcd"
-	pb "./jobpb"
+	jobpb "./jobpb"
 	"golang.org/x/net/context"
 )
 
@@ -21,9 +21,9 @@ import (
  * @return    error              error message, if any
  */
 func (s *LclusterdServer) StartJob(ctx context.Context,
-	r *pb.StartJobRequest) (*pb.StartJobResponse, error) {
+	r *jobpb.StartJobRequest) (*jobpb.StartJobResponse, error) {
 
-	response := &pb.StartJobResponse{}
+	response := &jobpb.StartJobResponse{}
 
 	pid, err := etcdServer.AddToGlobalQueue((libetcd.Job)(*r))
 	if err != nil || pid < 0 {
@@ -45,23 +45,23 @@ func (s *LclusterdServer) StartJob(ctx context.Context,
  * @return    error              error message, if any
  */
 func (s *LclusterdServer) CheckJob(ctx context.Context,
-	cjr *pb.CheckJobRequest) (*pb.CheckJobResponse, error) {
+	cjr *jobpb.CheckJobRequest) (*jobpb.CheckJobResponse, error) {
 
 	if cjr == nil || cjr.Pid < 1 {
-		return &pb.CheckJobResponse{Rc: config.CjrCorruptedServerInput},
+		return &jobpb.CheckJobResponse{Rc: config.CjrCorruptedServerInput},
 			fmt.Errorf("CheckJob() --> invalid input")
 	}
 
 	response, err := etcdServer.Client.Get(ctx, path.Join(config.QueueDir,
 		strconv.FormatInt(cjr.Pid, 10)))
 	if err != nil || response == nil {
-		return &pb.CheckJobResponse{Rc: config.CjrUnknown}, err
+		return &jobpb.CheckJobResponse{Rc: config.CjrUnknown}, err
 	}
 
 	// Cycle through all of the process refs and check if the job is active.
 	for _, p := range etcdServer.ProcessesList {
 		if p.Uuid == cjr.Pid {
-			return &pb.CheckJobResponse{Rc: config.CjrProcessActive}, nil
+			return &jobpb.CheckJobResponse{Rc: config.CjrProcessActive}, nil
 		}
 	}
 
@@ -73,7 +73,7 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
 	// TODO: suggest a feature where-by the program might one day keep
 	//       track of past jobs via logging or database.
 	//
-	return &pb.CheckJobResponse{Rc: config.CjrProcessNotExist}, nil
+	return &jobpb.CheckJobResponse{Rc: config.CjrProcessNotExist}, nil
 }
 
 // StopJob ... the gRPC API function to stop a job.
@@ -85,9 +85,9 @@ func (s *LclusterdServer) CheckJob(ctx context.Context,
  * @return    error              error message, if any
  */
 func (s *LclusterdServer) StopJob(ctx context.Context,
-	request *pb.StopJobRequest) (*pb.StopJobResponse, error) {
+	request *jobpb.StopJobRequest) (*jobpb.StopJobResponse, error) {
 
-	response := &pb.StopJobResponse{}
+	response := &jobpb.StopJobResponse{}
 
 	process, err := etcdServer.ObtainProcess(request.Pid)
 	if err != nil {

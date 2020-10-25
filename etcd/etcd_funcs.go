@@ -12,14 +12,14 @@ import (
 	"time"
 
 	"../config"
-	pb "../jobpb"
+	jobpb "../jobpb"
 	clientv3 "go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
 	"golang.org/x/net/context"
 )
 
 // Jobs are merely gRPC obj refs.
-type Job pb.StartJobRequest
+type Job jobpb.StartJobRequest
 
 // Etcd instance structure, which holds a pointer to the client and nodes.
 type EtcdInstance struct {

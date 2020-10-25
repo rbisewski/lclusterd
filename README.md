@@ -65,15 +65,11 @@ make target, so manual regeneration is not required.
 To start the server daemon:
 
 ```bash
-sudo lclusterd [--namespace=name] [--rootfs=/path/to/dir]
+sudo lclusterd [--namespace=name]
 ```
 
 This program will default to localhost, however, you can also specify the
 network namespace using the --namespace argument flag noted above.
-
-Since this program uses libcontainer, you will need to specify a rootfs
-location as well, which can be any safe POSIX location.
-
 
 To add a job to the server, where 'bash command' is the terminal command
 to be executed:

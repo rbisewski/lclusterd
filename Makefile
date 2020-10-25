@@ -41,8 +41,8 @@ example_rootfs:
 	@go get github.com/opencontainers/runc/libcontainer
 	@docker pull ubuntu:latest
 	@docker create --name ubuntu-husk ubuntu:latest
-	@mkdir -p ~/lclusterd/rootfs
-	@docker export ubuntu-husk | tar xvfC - ~/lclusterd/rootfs
+	@sudo mkdir -p /lclusterd/rootfs
+	@sudo docker export ubuntu-husk | sudo tar xvfC - /lclusterd/rootfs
 	@docker rm ubuntu-husk
 
 protobufs:

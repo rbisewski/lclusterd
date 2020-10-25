@@ -13,7 +13,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/user"
+	"path/filepath"
+	"strings"
 
+	config "./config"
 	libetcd "./etcd"
 )
 
@@ -26,9 +30,6 @@ var (
 func init() {
 	flag.StringVar(&namespace, "namespace", "127.0.0.1",
 		"Hostname or IP address")
-
-	flag.StringVar(&rootfs, "rootfs", "",
-		"Rootfs POSIX directory location for runc")
 }
 
 func main() {
@@ -39,9 +40,11 @@ func main() {
 		namespace = "127.0.0.1"
 	}
 
-	if rootfs == "" {
-		flag.Usage()
-		return
+	rootfs = config.Rootfs
+	if strings.HasPrefix(rootfs, "~/") {
+		usr, _ := user.Current()
+		homeDir := usr.HomeDir
+		rootfs = filepath.Join(homeDir, rootfs[2:])
 	}
 
 	// TODO: consider checking to ensure the network namespace actually

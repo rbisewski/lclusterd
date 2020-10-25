@@ -4,6 +4,9 @@ const (
 	// DebugMode ... display debug message to stdout
 	DebugMode = true
 
+	// Rootfs path, default is ~/lclusterd/rootfs/
+	Rootfs = "/lclusterd/rootfs/"
+
 	// EtcdBinaryPath ... path to etcd
 	EtcdBinaryPath = "/usr/local/bin/etcd"
 

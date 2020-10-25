@@ -75,33 +75,26 @@ Since this program uses libcontainer, you will need to specify a rootfs
 location as well, which can be any safe POSIX location.
 
 
-To add a job to the server, you can use the addjob argument like so:
+To add a job to the server, where 'bash command' is the terminal command
+to be executed:
 
 ```bash
-lclient --addjob='bash command'
+lclient -add='bash command'
 ```
 
-Where 'bash command' is the terminal command to be executed.
-
-
-To check on the current status of a job on the server, you can use the
-checkjob flag as such:
+To check on the current status of a job on the server, where uuid is the
+assigned number of the job in question:
 
 ```bash
-lclient --checkjob=uuid
+lclient -check=uuid
 ```
 
-Where uuid is the assigned number of the job in question.
-
-
-To remove a job from the server, use the removejob argument:
+To remove a job from the server, use the kill argument, where uuid is
+the assigned number of the job in question:
 
 ```bash
-lclient --removejob=uuid
+lclient -kill=uuid
 ```
-
-Where uuid is the assigned number of the job in question.
-
 
 # Program Implementation Design
 

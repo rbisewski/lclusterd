@@ -9,20 +9,20 @@ import (
 )
 
 var (
-	addJob    string
-	checkJob  int64
-	removeJob int64
+	addJob   string
+	checkJob int64
+	killJob  int64
 )
 
 func init() {
-	flag.StringVar(&addJob, "addjob", "",
+	flag.StringVar(&addJob, "add", "",
 		"Commandline program to execute; e.g. 'grep abc /path/to/file' ")
 
-	flag.Int64Var(&checkJob, "checkjob", 0,
+	flag.Int64Var(&checkJob, "check", 0,
 		"Uuid of the job to query status.")
 
-	flag.Int64Var(&removeJob, "removejob", 0,
-		"Uuid of the job to be removed.")
+	flag.Int64Var(&killJob, "kill", 0,
+		"Uuid of the job to be killed.")
 }
 
 func main() {
@@ -37,8 +37,8 @@ func main() {
 		os.Exit(checkJobOnServer(checkJob))
 	}
 
-	if removeJob > 0 {
-		os.Exit(removeJobFromServer(removeJob))
+	if killJob > 0 {
+		os.Exit(killJobFromServer(killJob))
 	}
 
 	// if no flags were given, print the usage
@@ -119,14 +119,14 @@ func checkJobOnServer(uuid int64) int {
 
 //! Remove a job from the server.
 /*
- * @param    int64    uuid of job to remove
+ * @param    int64    uuid of job to kill
  *
  * @return   none
  */
-func removeJobFromServer(uuid int64) int {
+func killJobFromServer(uuid int64) int {
 
 	if uuid < 1 {
-		fmt.Printf("removeJobFromServer() --> invalid input")
+		fmt.Printf("killJobFromServer() --> invalid input")
 		return 1
 	}
 
@@ -143,7 +143,7 @@ func removeJobFromServer(uuid int64) int {
 		return 0
 
 	case config.SjrSuccess:
-		fmt.Printf("Successfully removed job %d\n", uuid)
+		fmt.Printf("Successfully killed job %d\n", uuid)
 		return 0
 	}
 

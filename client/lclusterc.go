@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"../lcfg"
-	libclient "../lib/client"
 )
 
 var (
@@ -60,8 +59,7 @@ func addJobToServer(cmd string) int {
 		return 1
 	}
 
-	response, err := libclient.HaveClientAddJobToServer(cmd)
-
+	response, err := HaveClientAddJobToServer(cmd)
 	if err != nil || response.GetPid() < 0 {
 		fmt.Printf("\nError: Unable to add job to queue!\n%s\n", err.Error())
 		return 1
@@ -79,7 +77,7 @@ func addJobToServer(cmd string) int {
  */
 func checkJobOnServer(uuid int64) int {
 
-	response, err := libclient.HaveClientCheckJobOnServer(uuid)
+	response, err := HaveClientCheckJobOnServer(uuid)
 	if err != nil {
 		fmt.Printf(err.Error())
 		return 1
@@ -132,7 +130,7 @@ func removeJobFromServer(uuid int64) int {
 		return 1
 	}
 
-	response, _ := libclient.HaveClientStopJobOnServer(uuid)
+	response, _ := HaveClientStopJobOnServer(uuid)
 
 	switch response.Rc {
 

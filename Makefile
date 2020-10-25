@@ -49,18 +49,18 @@ regen_proto:
 	@echo "Regenerating lclusterpb protobuffs..."
 	@protoc -I lclusterpb/ lclusterpb/lclusterpb.proto --go_out=plugins=grpc:lclusterpb
 
-lclusterd:
+lclusterd: regen_proto
 	@echo "Building lclusterd..."
 	@go build
 
-client:
+client: regen_proto
 	@echo "Building lcluster client..."
 	@go build -o lclusterc ./client
 
 prep: protobuf_deps grpc_deps etcd_deps example_rootfs
 	@echo "Finished setting up the infrastructure needed for lclusterd."
 
-build: regen_proto lclusterd client 
+build: lclusterd client
 	@echo "Finished building lclusterd server and client."
 
 clean:

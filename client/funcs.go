@@ -1,11 +1,11 @@
-package libclient
+package main
 
 import (
 	"fmt"
 	"time"
 
-	"../../lcfg"
-	pb "../../lclusterpb"
+	"../lcfg"
+	pb "../lclusterpb"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )

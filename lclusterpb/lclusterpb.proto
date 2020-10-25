@@ -8,6 +8,8 @@ syntax = "proto3";
 
 package lclusterpb;
 
+option go_package = ".;lclusterpb";
+
 // Define a Lclusterd service for gRPC usage.
 service Lclusterd {
     rpc StartJob (StartJobRequest) returns (StartJobResponse) {} 

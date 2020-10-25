@@ -32,8 +32,7 @@ In the event that this program does not appear to work on a particular
 non-mainstream distro. Feel free to contact me if you need assistance
 and I will make note of it in future versions of this readme.
 
-
-# Installation
+# Pre-installation environment setup
 
 You can obtain the codebase via git:
 
@@ -41,26 +40,8 @@ You can obtain the codebase via git:
 git clone https://github.com/rbisewski/lclusterd
 ```
 
-Afterwards you can build both the server binary (lclusterd) and the client
-binary (lclusterc) as follows:
-
-```bash
-make
-```
-
-If you need to make changes to the PB prototype file, you can also run the
-following command:
-
-```bash
-make regen_proto
-```
-
-Note that prototypes are regenerated before every build using the standard
-make target, so manual regeneration is not required.
-
-# Environment setup
-
-This applications requires a number of components in order to actually run:
+As noted above, this applications requires a number of components in order
+to actually run:
 
 * gRPC
 * etcd
@@ -72,6 +53,26 @@ That said, an easy Makefile target has been provided to prepare a system:
 ```bash
 make prep
 ```
+
+# Installation
+
+Having prepared your system environment as per the above section, you can
+build both the server binary (lclusterd) and the client binary (lclusterc)
+as follows:
+
+```bash
+make
+```
+
+Later on, if you need to make changes to the PB prototype file, you can also
+run the following command:
+
+```bash
+make regen_proto
+```
+
+Note that prototypes are regenerated before every build using the standard
+make target, so manual regeneration is not required.
 
 # Basic Usage Instructions
 

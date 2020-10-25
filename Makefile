@@ -59,9 +59,10 @@ client:
 	@go build -o lclusterc ./client
 
 prep: grpc_deps etcd_docker example_rootfs
-	@echo "Setting up the infrastructure needed for lclusterd..."
+	@echo "Finished setting up the infrastructure needed for lclusterd."
 
 build: regen_proto lclusterd client 
+	@echo "Finished building lclusterd server and client."
 
 clean:
 	@echo "Cleaning binaries..."

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"../config"
-	pb "../lclusterpb"
+	pb "../jobpb"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )

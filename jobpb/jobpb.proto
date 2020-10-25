@@ -4,9 +4,9 @@
 
 syntax = "proto3";
 
-package lclusterpb;
+package jobpb;
 
-option go_package = ".;lclusterpb";
+option go_package = ".;jobpb";
 
 // Define a Lclusterd service for gRPC usage.
 service Lclusterd {

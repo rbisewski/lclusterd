@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"./config"
-	pb "./lclusterpb"
+	pb "./jobpb"
 	grpc "google.golang.org/grpc"
 )
 

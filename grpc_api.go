@@ -8,7 +8,7 @@ import (
 
 	"./config"
 	libetcd "./etcd"
-	pb "./lclusterpb"
+	pb "./jobpb"
 	"golang.org/x/net/context"
 )
 

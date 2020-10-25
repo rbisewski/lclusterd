@@ -1,15 +1,23 @@
-# lclusterd - a lite clustered job scheduler for Linux
+# lclusterd - minimalistic containers for Linux
 
-lcluster is a lightweight Linux job scheduler designed to create clustered
-nodes for the purposes of running small jobs in isolated libcontainer
-instances.
+lclusterd is a lightweight Linux job container server designed for the
+purposes of running small jobs in isolated libcontainer instances.
 
-Consider reading the *Basic Usage Instructions* at a minimum to get the hang
-of using this job scheduler. To get a deeper understanding about how this
-program was made, read the *Program Implementation Design* section.
+Essentially this project can be thought of as a personal challenge, which
+while technically a proof of concept, has functionality similar to docker
+in roughly 2100 lines of code.
 
-Note that while this is a work in progress, it does somewhat partially work.
+Consider reading the *Requirements* at a minimum to get the hang of how
+to setup this job scheduler locally, although the author makes no promises
+as to whether this will run on your specific Linux system.
 
+To get a deeper understanding about how this program was made, read the
+*Program Implementation Design* section.
+
+Note that this is only somewhat working, as it was originally intended as a
+part of a larger piece of infrastructure. It is currently uncompleted, but
+occasionally it is patched to work with newer versions of libcontainer and
+gRPC and golang.
 
 # Requirements
 

@@ -1,103 +1,102 @@
-/*
- * File: config.go
- *
- * Description: stores various hardcoded essential variables
- */
-
 package lcfg
 
 const (
-
-	// If this is enabled, print debug messages.
+	// DebugMode ... display debug message to stdout
 	DebugMode = true
 
-	// Location of the etcd binary, as a POSIX dir path.
+	// EtcdBinaryPath ... path to etcd
 	EtcdBinaryPath = "/usr/local/bin/etcd"
 
-	// Storage location of the etcd server data dir; in the function
-	// "StartEtcdServerBackgroundProcess" found in the etcd_funcs.go file, a
-	// timestamp is appended to the end of this path so as to keep each server
-	// separate.
+	// EtcdDataDir ... storage location of the etcd server data
 	EtcdDataDir = "/tmp/etcd_"
 
-	// According to the etcd documentation, the clients listen on 2379, while
-	// servers listen on 2380.
+	// EtcdClientPort ... normally port 2379
 	EtcdClientPort = ":2379"
+
+	// EtcdServerPort ... normally port 2380
 	EtcdServerPort = ":2380"
 
-	// IPv4 address of the gRPC server.
+	// GrpcServerAddr ... IPv4 address of the gRPC server.
 	GrpcServerAddr = "localhost"
 
-	// High number port for use by the gRPC server.
+	// GrpcPort ... high number port for use by the gRPC server.
 	GrpcPort = ":64051"
 
-	// Etcd grace period, in seconds.
+	// EtcdGracePeriodSec ... etcd grace period, in seconds
 	EtcdGracePeriodSec = 3
 
-	// Prefered command shell.
+	// Sh ... shell
 	Sh = "/bin/bash"
 
-	// Variables needed by etcd to store values.
-	NodesDir       = "/nodes"
-	ProcessesDir   = "/processes"
-	JobsDir        = "/jobs"
-	QueueDir       = "/queue"
-	FailedNodesDir = "/failed_nodes"
-	WarnedJobsDir  = "/warned_jobs"
+	// NodesDir ...
+	NodesDir = "/nodes"
 
-	// Location to hold which node is currently ready, aka 'primed'.
+	// ProcessesDir ...
+	ProcessesDir = "/processes"
+
+	// JobsDir ...
+	JobsDir = "/jobs"
+
+	// QueueDir ...
+	QueueDir = "/queue"
+
+	// FailedNodesDir ...
+	FailedNodesDir = "/failed_nodes"
+
+	// WarnedJobsDir ...
+	WarnedJobsDir = "/warned_jobs"
+
+	// Primed ... location to hold which node is currently ready, aka 'primed'.
 	Primed = "/primed"
 
-	// TTL lock values, in seconds.
+	// PrimedTTL ... TTL lock values for the primed node, in seconds
 	PrimedTTL = 4
-	NlistTTL  = 4
 
-	// CheckJobResponse return code.
-	//
-	// -1 --> failure, due to corrupted server or input
-	//  0 --> unknown job status
-	//  1 --> process does not exist
-	//  2 --> process is queued
-	//  3 --> process is active on a node
-	//
+	// NlistTTL ...
+	NlistTTL = 4
+
+	/* CheckJobResponse return code.
+	 *
+	 * -1 --> failure, due to corrupted server or input
+	 *  0 --> unknown job status
+	 *  1 --> process does not exist
+	 *  2 --> process is queued
+	 *  3 --> process is active on a node
+	 */
+
+	// CjrCorruptedServerInput ...
 	CjrCorruptedServerInput = -1
-	CjrUnknown              = 0
-	CjrProcessNotExist      = 1
-	CjrProcessQueued        = 2
-	CjrProcessActive        = 3
 
-	// StopJobResponse return code.
-	//
-	// -1 --> failure, due to corrupted server or input
-	//  0 --> success
-	//  1 --> process does not exist
-	//
-	SjrFailure      = -1
-	SjrSuccess      = 0
+	// CjrUnknown ...
+	CjrUnknown = 0
+
+	// CjrProcessNotExist ...
+	CjrProcessNotExist = 1
+
+	// CjrProcessQueued ...
+	CjrProcessQueued = 2
+
+	// CjrProcessActive ...
+	CjrProcessActive = 3
+
+	/* StopJobResponse return code.
+	 *
+	 * -1 --> failure, due to corrupted server or input
+	 *  0 --> success
+	 *  1 --> process does not exist
+	 */
+
+	// SjrFailure ... job failed to stop or was lost
+	SjrFailure = -1
+
+	// SjrSuccess ... job was stopped correctly
+	SjrSuccess = 0
+
+	// SjrDoesNotExist ... stopped job does not exist
 	SjrDoesNotExist = 1
 )
 
-/* --------------------------------------------------
- * Capabilities the libcontainer instances will need.
- * --------------------------------------------------
- *
- * chown
- * dac_override
- * fsetid
- * fowner
- * mknod
- * net_raw
- * setgid
- * setuid
- * setfcap
- * setpcap
- * net_bind_service
- * sys_chroot
- * kill
- * audit_write
- *
- * --------------------------------------------------
- */
+// LclustercCaps ... kernel capabilities needed by Lclusterc
 var LclustercCaps = []string{
 	"CAP_CHOWN",
 	"CAP_DAC_OVERRIDE",

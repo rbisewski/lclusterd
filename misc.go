@@ -1,10 +1,3 @@
-/*
- * File: misc.go
- *
- * Description: Contains a number of helpful util functions.
- *
- */
-
 package main
 
 import (

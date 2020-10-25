@@ -1,18 +1,13 @@
-/*
- * File: lib/client/client_funcs.go
- *
- * Description: contains functions needed by the lclusterd client
- */
-
 package libclient
 
 import (
+	"fmt"
+	"time"
+
 	"../../lcfg"
 	pb "../../lclusterpb"
-	"fmt"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	"time"
 )
 
 //! Function so client can pass a job to the server.
@@ -55,9 +50,9 @@ func HaveClientAddJobToServer(cmd string) (pb.StartJobResponse, error) {
 	response, err := lclusterClient.StartJob(ctx, &request)
 	cancel()
 
-        if err != nil {
-            return pb.StartJobResponse{}, err
-        }
+	if err != nil {
+		return pb.StartJobResponse{}, err
+	}
 
 	return *response, nil
 }

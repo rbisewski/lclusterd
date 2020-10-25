@@ -1,24 +1,19 @@
-/*
- * File: grpc_server.go
- *
- * Description: contains functions to handle the initial gRPC server
- */
-
 package main
 
 import (
+	"log"
+	"net"
+
 	"./lcfg"
 	pb "./lclusterpb"
 	grpc "google.golang.org/grpc"
-	"log"
-	"net"
 )
 
-// Definition of the LclusterdServer, useful with grpc proto.
+// LclusterdServer ... main structure
 type LclusterdServer struct {
 }
 
-//! Start a grpc server instance.
+// startGRPCServer ... start a grpc server instance.
 /*
  * @return    error    error message, if any
  */

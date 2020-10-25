@@ -1,17 +1,12 @@
-/*
- * File: misc.go
- *
- * Description: holds misc etcd funcs
- */
-
 package libetcd
 
 import (
-	"../../lcfg"
 	"crypto/rand"
 	"encoding/base64"
 	"log"
 	"strings"
+
+	"../../lcfg"
 )
 
 //! Spawns a pseudo-random uuid based on /dev/random.

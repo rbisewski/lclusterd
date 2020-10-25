@@ -1,15 +1,10 @@
-/*
- * File: libcontainer_funcs.go
- *
- * Description: functions to assist container spawning
- */
-
 package libetcd
 
 import (
+	"syscall"
+
 	"../../lcfg"
 	"github.com/opencontainers/runc/libcontainer/configs"
-	"syscall"
 )
 
 //! Assemble and return a libcontainer config.

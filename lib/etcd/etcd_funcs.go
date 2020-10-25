@@ -1,19 +1,8 @@
-/*
- * File: etcd_funcs.go
- *
- * Description: holds the etcd instance structure and funcs
- */
-
 package libetcd
 
 import (
-	"../../lcfg"
-	pb "../../lclusterpb"
 	"encoding/json"
 	"fmt"
-	clientv3 "go.etcd.io/etcd/clientv3"
-	"go.etcd.io/etcd/mvcc/mvccpb"
-	"golang.org/x/net/context"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +10,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"../../lcfg"
+	pb "../../lclusterpb"
+	clientv3 "go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/mvcc/mvccpb"
+	"golang.org/x/net/context"
 )
 
 // Jobs are merely gRPC obj refs.
@@ -58,14 +53,10 @@ type Node struct {
  */
 func StartEtcdServerBackgroundProcess(namespace string) error {
 
-	// input validation, ensure that the global network namespace value
-	// gets set to something safe; note that this value is set in the main
-	// routine of main.go
 	if len(namespace) < 1 {
 		return fmt.Errorf("Error: Improper network namespace length!")
 	}
 
-	// Current protocol being used.
 	protocol := "http://"
 
 	// Assemble a command based on the client / server ports and given
@@ -79,7 +70,6 @@ func StartEtcdServerBackgroundProcess(namespace string) error {
 	advertiseClientUrls := protocol + namespace + lcfg.EtcdClientPort
 	dataDirWithUniqueCryptonum := lcfg.EtcdDataDir + spawnUuid(32)
 
-	// Create a string array to hold all of the necessary arguments.
 	var etcdArgs = []string{
 		"--name",
 		namespace,
@@ -95,11 +85,7 @@ func StartEtcdServerBackgroundProcess(namespace string) error {
 		dataDirWithUniqueCryptonum,
 	}
 
-	// Attempt to exec the command.
-	err := exec.Command(lcfg.EtcdBinaryPath, etcdArgs...).Start()
-
-	// Pass back the error or nil.
-	return err
+	return exec.Command(lcfg.EtcdBinaryPath, etcdArgs...).Start()
 }
 
 //! Creates a new EtcdInstance and returns a pointer to it.
@@ -113,24 +99,18 @@ func StartEtcdServerBackgroundProcess(namespace string) error {
 func CreateEtcdInstance(namespace string, rootfs string) (inst *EtcdInstance,
 	err error) {
 
-	// Make a client configuration for use with generating the etcd client
-	// instance later on...
 	etcdClientConfiguration := clientv3.Config{
 		Endpoints:   []string{namespace + lcfg.EtcdClientPort},
 		DialTimeout: 5 * time.Second,
 	}
 
-	// Use the above configuration to set the new client.
 	newlyGeneratedClient, err := clientv3.New(etcdClientConfiguration)
-
-	// Safety check, ensure the above config is not nil.
 	if err != nil {
 		return nil, fmt.Errorf("CreateEtcdInstance() --> improperly " +
 			"generated client due to...\n" +
 			err.Error())
 	}
 
-	// grab the hostname, if an error occurs pass it back
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -184,8 +164,6 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse, succe
 	for {
 		// Update the time-to-live
 		err := inst.updateTTL(lease.ID)
-
-		// If unable to update the TTL, pass back the error message.
 		if err != nil {
 			*successfullyUpdatedTTL = false
 			break
@@ -207,10 +185,7 @@ func (inst *EtcdInstance) keepKeyAlive(lease *clientv3.LeaseGrantResponse, succe
 func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool,
 	ctx context.Context) error {
 
-	// Grant the lease.
 	lease, err := inst.Client.Grant(ctx, lcfg.PrimedTTL)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
@@ -218,14 +193,12 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool,
 	// Setup a key-value store.
 	kvc := clientv3.NewKV(inst.Client)
 
-	// Check if the value exists, and insert it if it does not.
 	response, err := kvc.Txn(ctx).
 		If(clientv3.Compare(clientv3.Value(lcfg.Primed), "=", "primed")).
 		Then().
 		Else(clientv3.OpPut(lcfg.Primed, "primed", clientv3.WithLease(lease.ID))).
 		Commit()
 
-	// If an error occurred, pass it back.
 	if err != nil {
 		return err
 	}
@@ -253,7 +226,6 @@ func (inst *EtcdInstance) primedLock(primedNotificationChan chan bool,
 	// if the node got this far, close the notification channel
 	primedNotificationChan <- false
 
-	// success
 	return nil
 }
 
@@ -271,11 +243,8 @@ func (inst *EtcdInstance) watchUntilPrimed(notificationChan chan bool) {
 
 	// keep running until this node gets to be primed
 	for {
-
-		// Grab the response from the channel.
 		wresponse := <-responsingChan
 
-		// Cycle through the events.
 		for _, ev := range wresponse.Events {
 
 			// if not a deleted prime event, skip it...
@@ -293,12 +262,10 @@ func (inst *EtcdInstance) watchUntilPrimed(notificationChan chan bool) {
 			// Cancel the current context.
 			cancel()
 
-			// if an error occurs, print it our
 			if err != nil {
 				log.Println(err.Error() + "\n")
 			}
 
-			// end the loop since this is completed
 			return
 		}
 	}
@@ -313,8 +280,6 @@ func (inst *EtcdInstance) watchUntilPrimed(notificationChan chan bool) {
 func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 
 	for {
-
-		// Wait for the channel to notify this.
 		isPrimed := <-notify
 
 		// not yet primed? do nothing...
@@ -322,40 +287,28 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 			continue
 		}
 
-		// Assemble the nodes via the list.
 		nodes, err := inst.obtainListOfNodes()
-
-		// if an error occurs, print it out
 		if err != nil {
 			log.Println("primeThisNode() --> node gathering failed\n " +
 				err.Error())
 			continue
 		}
 
-		// Generate the job queue
 		err = inst.initializeJobQueue()
-
-		// if an error occurs, print it
 		if err != nil {
 			log.Println("primeThisNode() --> unable to create job queue\n" +
 				err.Error())
 			continue
 		}
 
-		// reserve a global id for jobs
 		err = inst.initializeGlobalJobID()
-
-		// if an error occurs, print it
 		if err != nil {
 			log.Println("primeThisNode() --> unable to set global id\n" +
 				err.Error())
 			continue
 		}
 
-		// setup the directory for processes to be ran on nodes
 		err = inst.initializeProcessStorage()
-
-		// if an error occurred, print it out
 		if err != nil {
 			log.Println("primeThisNode() --> unable to set aside storage for " +
 				"processes\n" + err.Error())
@@ -365,8 +318,6 @@ func (inst *EtcdInstance) primeThisNode(notify chan bool) {
 		// with all of the pieces in place, this syncs with the scheduler,
 		// and the entire setup is primed for new jobs
 		err = inst.syncScheduler(inst.node.HostID, nodes)
-
-		// if an error occurs, print it out and skip to the next loop
 		if err != nil {
 			log.Println(err.Error())
 			continue
@@ -386,7 +337,6 @@ func (inst *EtcdInstance) initializeJobQueue() error {
 	// Setup a key-value store for the queue elements.
 	kvc := clientv3.NewKV(inst.Client)
 
-	// Grab the context.
 	ctx, cancel := context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
@@ -397,10 +347,7 @@ func (inst *EtcdInstance) initializeJobQueue() error {
 		Else(clientv3.OpPut(lcfg.QueueDir, "queue")).
 		Commit()
 
-	// cancel the context since it is no longer needed
 	cancel()
-
-	// pass back the error, if any
 	return err
 }
 
@@ -413,7 +360,6 @@ func (inst *EtcdInstance) initializeGlobalJobID() error {
 	// Setup a key value storage.
 	kvc := clientv3.NewKV(inst.Client)
 
-	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
@@ -424,10 +370,7 @@ func (inst *EtcdInstance) initializeGlobalJobID() error {
 		Else(clientv3.OpPut(lcfg.JobsDir, "0")).
 		Commit()
 
-	// cancel the current context if we no longer need it
 	cancel()
-
-	// pass back the error, if any
 	return err
 }
 
@@ -440,7 +383,6 @@ func (inst *EtcdInstance) initializeProcessStorage() error {
 	// setup the key-value store
 	kvc := clientv3.NewKV(inst.Client)
 
-	// grab the current context
 	ctx, cancel := context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
@@ -451,10 +393,7 @@ func (inst *EtcdInstance) initializeProcessStorage() error {
 		Else(clientv3.OpPut(lcfg.ProcessesDir, "processes")).
 		Commit()
 
-	// cancel the current context as this no longer needs it
 	cancel()
-
-	// pass back the error, if any
 	return err
 }
 
@@ -465,10 +404,8 @@ func (inst *EtcdInstance) initializeProcessStorage() error {
  */
 func (inst *EtcdInstance) InitNode() (chan bool, error) {
 
-	// Assign a chunk of memory for any potential processes
+	// initialize an instance
 	inst.ProcessesList = make(map[int64]*Process)
-
-	// Connect this with the nodes list.
 	err := inst.addToNodesList()
 	if err != nil {
 		return nil, err
@@ -483,10 +420,7 @@ func (inst *EtcdInstance) InitNode() (chan bool, error) {
 
 	// Attempt to prime the node.
 	err = inst.primedLock(notify, ctx)
-
-	// Cancel the current context.
 	cancel()
-
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +434,6 @@ func (inst *EtcdInstance) InitNode() (chan bool, error) {
  */
 func (inst *EtcdInstance) addToNodesList() error {
 
-	// Marshal a given node.
 	mresult, err := json.Marshal(inst.node)
 	if err != nil {
 		log.Println(err.Error())
@@ -520,30 +453,21 @@ func (inst *EtcdInstance) addToNodesList() error {
 	// insert the key into etcd
 	_, err = inst.Client.Put(ctx, path.Join(lcfg.NodesDir, inst.node.HostID),
 		string(mresult), clientv3.WithLease(lease.ID))
-
-	// revoke the lease if an error occurred
 	if err != nil {
 		inst.Client.Revoke(ctx, lease.ID)
 		return err
 	}
 
-	// cancel the current context as this no longer needs it
 	cancel()
 
-	// Setup a local jobs queue for the node.
 	jobQueue := path.Join(lcfg.NodesDir, inst.node.HostID, "jobs")
 
 	// grab the current context
 	ctx, cancel = context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
-	// add the context into the k-v storage as well
 	_, err = inst.Client.Put(ctx, jobQueue, "")
-
-	// cancel the current context as it is no long needed
 	cancel()
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
@@ -555,7 +479,6 @@ func (inst *EtcdInstance) addToNodesList() error {
 	// keep tabs on the job queue
 	go inst.watchClientJobQueue()
 
-	// everything works, so pass back nil
 	return nil
 }
 
@@ -571,10 +494,7 @@ func (inst *EtcdInstance) storeProcess(p Process) error {
 	// processes
 	inst.ProcessesList[p.Uuid] = &p
 
-	// Attempt to marshell a node.
 	mresult, err := json.Marshal(inst.node)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
@@ -587,10 +507,7 @@ func (inst *EtcdInstance) storeProcess(p Process) error {
 	_, err = inst.Client.Put(ctx, path.Join(lcfg.ProcessesDir,
 		strconv.FormatInt(p.Uuid, 10)), string(mresult))
 
-	// cancel the current context, as it is no longer needed
 	cancel()
-
-	// pass back the resulting error, if any
 	return err
 }
 
@@ -603,12 +520,10 @@ func (inst *EtcdInstance) storeProcess(p Process) error {
  */
 func (inst *EtcdInstance) ObtainProcess(Uuid int64) (p *Process, err error) {
 
-	// ensure the Uuid is something reasonable
 	if Uuid < 0 {
 		return nil, fmt.Errorf("obtainProcess() --> invalid input")
 	}
 
-	// otherwise return the process in question
 	return inst.ProcessesList[Uuid], nil
 }
 
@@ -618,19 +533,14 @@ func (inst *EtcdInstance) ObtainProcess(Uuid int64) (p *Process, err error) {
  */
 func (inst *EtcdInstance) watchClientJobQueue() {
 
-	// Assemble the job queue path.
 	jobQueue := path.Join(lcfg.NodesDir, inst.node.HostID, "jobs")
 
-	// Watch the channel for a response.
 	rchan := inst.Client.Watch(context.Background(), jobQueue,
 		clientv3.WithPrefix())
 
 	for {
-
-		// Grab responses from the channel.
 		wresponse := <-rchan
 
-		// Cycle through all given events.
 		for _, ev := range wresponse.Events {
 
 			// this function is only interested in put events
@@ -641,8 +551,6 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 			// Unmarshal the data, if any.
 			var j Job
 			err := json.Unmarshal(ev.Kv.Value, &j)
-
-			// print out the error message, if any
 			if err != nil {
 				log.Println("watchClientJobQueue() --> failed to read job data")
 				log.Println(err.Error())
@@ -652,8 +560,6 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 			// Using the job data, attempt to start a process
 			// on the node.
 			p, err := inst.StartProcess(j)
-
-			// print out the error message, if any
 			if err != nil {
 				log.Println("watchClientJobQueue() --> unable to start process")
 				log.Println(err.Error())
@@ -662,8 +568,6 @@ func (inst *EtcdInstance) watchClientJobQueue() {
 
 			// store a ref to the process into etcd
 			err = inst.storeProcess(p)
-
-			// print out the error message, if any
 			if err != nil {
 				log.Println("watchClientJobQueue() --> could not store process " +
 					"data into etcd")
@@ -687,16 +591,12 @@ func (inst *EtcdInstance) watchClientJobQueue() {
  */
 func (inst *EtcdInstance) watchGeneralJobQueue() {
 
-	// Watch the queue in case a new job appears.
 	rch := inst.Client.Watch(context.Background(), lcfg.QueueDir,
 		clientv3.WithPrefix())
 
 	for {
-
-		// Look for responses in the channel.
 		wresponse := <-rch
 
-		// Cycle through all of the events.
 		for _, ev := range wresponse.Events {
 
 			// this function is only interested in put events
@@ -704,26 +604,20 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
 				continue
 			}
 
-			// Attempt to unmarshal the job data.
 			var j Job
-			err := json.Unmarshal(ev.Kv.Value, &j)
 
-			// if an error occurred, print it out
+			err := json.Unmarshal(ev.Kv.Value, &j)
 			if err != nil {
 				log.Println("watchGeneralJobQueue() --> unable to read job data")
 				log.Println(err.Error())
 			}
 
-			// attempt to schedule the job
 			err = inst.scheduleJob(&j)
-
-			// if an error occurred, print it out
 			if err != nil {
 				log.Println("watchGeneralJobQueue() --> unable to schedule job")
 				log.Println(err.Error())
 			}
 
-			// print out a helpful message
 			log.Println("Node manager has detected a scheduled job.")
 		}
 	}
@@ -738,7 +632,6 @@ func (inst *EtcdInstance) watchGeneralJobQueue() {
  */
 func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
-	// further check, ensure the instance is safe
 	if inst.Client == nil {
 		return -1, fmt.Errorf("addToGlobalQueue() --> malformed etcd instance")
 	}
@@ -762,7 +655,6 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 		}
 	}
 
-	// cancel the context as it is no longer needed
 	cancel()
 
 	// if an error occurs, pass it back; note that if an error occurs at
@@ -779,8 +671,6 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 	//
 	nextUuid := time.Now().UnixNano()
 	nextUuidAsStr := strconv.FormatInt(nextUuid, 10)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		return -1, err
@@ -788,11 +678,7 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 
 	// set the job process id to the recovered value
 	j.Pid = nextUuid
-
-	// Attempt to marshal the job.
 	mresult, err := json.Marshal(j)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		return -1, err
@@ -802,41 +688,32 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
 	ctx, cancel = context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
-	// attempt to insert it into etcd
 	_, err = inst.Client.Put(ctx, path.Join(lcfg.QueueDir,
 		nextUuidAsStr), string(mresult))
 
-	// if debug mode...
 	if lcfg.DebugMode {
 
-		// Grab the newly inserted job entry.
 		debugResponse, err := inst.Client.Get(ctx,
 			path.Join(lcfg.QueueDir, nextUuidAsStr))
 
-		// if an error occurs, this failed to insert the new job
 		if err != nil {
 			cancel()
 			log.Println(err.Error())
 			return -1, err
 		}
 
-		// Cycle through the values of the newly queued job.
 		debugf("The newly queued job was as follows:")
 		for _, ent := range debugResponse.Kvs {
 			debugf(string(ent.Value))
 		}
 	}
 
-	// cancel the current context as it is no longer needed
 	cancel()
-
-	// if an error occurred, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		return -1, err
 	}
 
-	// if all was successful, go ahead and pass back the id
 	return nextUuid, nil
 }
 
@@ -847,12 +724,10 @@ func (inst *EtcdInstance) AddToGlobalQueue(j Job) (int64, error) {
  */
 func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 
-	// input validation
 	if j == nil {
 		return fmt.Errorf("QueueJobOnNode() --> invalid input")
 	}
 
-	// define a node husk; it'll get used later on when this hands the job off to it
 	var node Node
 
 	// Grab the current context.
@@ -863,44 +738,30 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 	response, err := inst.Client.Get(ctx, path.Join(lcfg.NodesDir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
-	// if debug mode...
 	if lcfg.DebugMode && err == nil {
 
-		// cycle through all of the current nodes for the benefit of the developer
 		debugf("The primed node contains the following:")
 		for _, ent := range response.Kvs {
 			debugf(string(ent.Key) + " => " + string(ent.Value))
 		}
 	}
 
-	// cancel the current context as it is no longer needed
 	cancel()
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
-
-	// further safety check, ensure the primed node is not null
 	if len(response.Kvs) < 1 {
 		return fmt.Errorf("QueueJobOnNode() --> primed node appears to be null")
 	}
 
-	// unmarshal the recovered response data
 	err = json.Unmarshal(response.Kvs[0].Value, &node)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
 
 	// Job ID is the next index in the array.
 	Uuid := strconv.FormatInt(j.Pid, 10)
-
-	// Marshal the job data.
 	mresult, err := json.Marshal(j)
-
-	// if an error occurred, pass it back
 	if err != nil {
 		return err
 	}
@@ -924,31 +785,21 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
 	responseToJobAddToNode, err := inst.Client.Put(ctx,
 		path.Join(jobQueue, Uuid), string(mresult))
 
-	// if debug mode...
 	if lcfg.DebugMode && err == nil && responseToJobAddToNode != nil {
-
-		// tell the developer what happened at this stage...
 		debugf("Node manager has responsed with valid put response.")
 	}
 
-	// cancel the current context as this no longer needs it
 	cancel()
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return err
 	}
 
-	// update etcd with the new node queue info
 	err = inst.putNode(&node)
-
-	// if an error occurred, pass it back
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	// everything was a success, so return nil here
 	return nil
 }
 
@@ -961,7 +812,6 @@ func (inst *EtcdInstance) QueueJobOnNode(hostID string, j *Job) error {
  */
 func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
 
-	// input validation
 	if len(hostID) < 1 {
 		return nil, fmt.Errorf("getNode() --> invalid input")
 	}
@@ -974,30 +824,22 @@ func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
 	response, err := inst.Client.Get(ctx, path.Join(lcfg.NodesDir, hostID),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 
-	// cancel the current context
 	cancel()
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return nil, err
 	}
 
-	// safety check, ensure the value is something proper
 	if len(response.Kvs) < 1 {
 		return nil, fmt.Errorf("No node with a Host id " + hostID +
 			" detected in the store")
 	}
 
-	// Since the value appears safe, attempt to unmarshal.
 	node := &Node{}
 	err = json.Unmarshal(response.Kvs[0].Value, node)
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return nil, err
 	}
 
-	// if the program made it here, pass back the node pointer
 	return node, nil
 }
 
@@ -1009,15 +851,11 @@ func (inst *EtcdInstance) getNode(hostID string) (*Node, error) {
  */
 func (inst *EtcdInstance) putNode(node *Node) error {
 
-	// input validation, make sure this actually got a node
 	if node == nil {
 		return fmt.Errorf("putNode() --> invalid input")
 	}
 
-	// Marshal the node data.
 	mresult, err := json.Marshal(node)
-
-	// if an error occurs, print it out
 	if err != nil {
 		return err
 	}
@@ -1030,15 +868,11 @@ func (inst *EtcdInstance) putNode(node *Node) error {
 	_, err = inst.Client.Put(ctx, path.Join(lcfg.NodesDir,
 		node.HostID), string(mresult))
 
-	// cancel the current context
 	cancel()
-
-	// if an error occurred, pass it back
 	if err != nil {
 		return err
 	}
 
-	// otherwise this was successful so pass back nil
 	return nil
 }
 
@@ -1049,24 +883,18 @@ func (inst *EtcdInstance) putNode(node *Node) error {
  */
 func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 
-	// Grab the current context.
 	ctx, cancel := context.WithTimeout(context.Background(),
 		lcfg.EtcdGracePeriodSec*time.Second)
 
-	// Obtain the nodes dir contents.
 	response, err := inst.Client.Get(ctx, lcfg.NodesDir,
 		clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey,
 			clientv3.SortAscend))
 
-	// cancel the current context
 	cancel()
-
-	// if an error occurs, pass it back
 	if err != nil {
 		return nil, err
 	}
 
-	// For every key entry in the nodes location.
 	debugf("The following nodes are present on the list:")
 	for _, entry := range response.Kvs {
 
@@ -1087,9 +915,6 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 		// Attempt to unmarshal the node data.
 		node := Node{}
 		err = json.Unmarshal(entry.Value, &node)
-
-		// if an error occurs, pass it back; also a partial list of nodes
-		// could be useful as a fallback
 		if err != nil {
 			return nodes, err
 		}
@@ -1101,6 +926,5 @@ func (inst *EtcdInstance) obtainListOfNodes() (nodes []*Node, err error) {
 			", host id: " + node.HostID)
 	}
 
-	// pass back the completed list of nodes
 	return nodes, nil
 }

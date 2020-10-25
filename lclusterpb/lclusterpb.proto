@@ -1,7 +1,5 @@
 /*
- * File: lclusterpb.proto
- *
- * Description: prototype for remote process calls
+ * prototype for remote process calls
  */
 
 syntax = "proto3";

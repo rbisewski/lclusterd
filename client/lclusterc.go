@@ -1,23 +1,18 @@
-/*
- * File: client/main.go
- *
- * Description: Contains the lcluster client code.
- */
-
 package main
 
 import (
-	"../lcfg"
-	libclient "../lib/client"
 	"flag"
 	"fmt"
 	"os"
+
+	"../lcfg"
+	libclient "../lib/client"
 )
 
 var (
-addJob string
-checkJob int64
-removeJob int64
+	addJob    string
+	checkJob  int64
+	removeJob int64
 )
 
 func init() {
@@ -36,18 +31,18 @@ func main() {
 	flag.Parse()
 
 	if len(addJob) > 0 {
-	        os.Exit(addJobToServer(addJob))
+		os.Exit(addJobToServer(addJob))
 	}
 
-        if checkJob > 0 {
-	        os.Exit(checkJobOnServer(checkJob))
+	if checkJob > 0 {
+		os.Exit(checkJobOnServer(checkJob))
 	}
 
-        if removeJob > 0 {
-	        os.Exit(removeJobFromServer(removeJob))
+	if removeJob > 0 {
+		os.Exit(removeJobFromServer(removeJob))
 	}
 
-        // if no flags were given, print the usage
+	// if no flags were given, print the usage
 	flag.Usage()
 }
 
@@ -132,16 +127,13 @@ func checkJobOnServer(uuid int64) int {
  */
 func removeJobFromServer(uuid int64) int {
 
-	// Input validation
 	if uuid < 1 {
 		fmt.Printf("removeJobFromServer() --> invalid input")
 		return 1
 	}
 
-	// Tell the server the Uuid of the job to stop.
 	response, _ := libclient.HaveClientStopJobOnServer(uuid)
 
-	// Handle the different response codes.
 	switch response.Rc {
 
 	case lcfg.SjrFailure:
@@ -157,10 +149,9 @@ func removeJobFromServer(uuid int64) int {
 		return 0
 	}
 
-	// otherwise if none of the above happened, print out a message
-	// stating this is unknown, with the response code
 	fmt.Printf("The following undefined response code was given "+
 		"back: %d\nConsider contacting the server operator.\n",
 		response.Rc)
+
 	return 0
 }

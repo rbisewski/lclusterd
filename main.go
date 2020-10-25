@@ -1,8 +1,4 @@
 /*
- * File: main.go
- *
- * Description: Contains the main.go routine.
- *
  * TODO: right now this program treats `namespace` as a hostname or IPv4
  * address, rather than an actual network namespace; this ought to be fixed
  *
@@ -51,15 +47,11 @@ func main() {
 	// TODO: consider checking to ensure the network namespace actually
 	// exists on this system.
 
-	// Do a safety check to ensure that the rootfs is actually a
-	// valid POSIX directory location, and that it actually exists.
 	if !directoryExists(rootfs) {
 		fmt.Printf("Error: the following directory does not exist: " + rootfs)
 		return
 	}
 
-	// Attempt to start the etcd server in the background so that the
-	// instances are able to store and obtain key-values.
 	err := libetcd.StartEtcdServerBackgroundProcess(namespace)
 	if err != nil {
 		fmt.Printf(err.Error())
@@ -80,7 +72,6 @@ func main() {
 	log.Println("Network Namespace: " + namespace)
 	log.Println("Rootfs Location: " + rootfs)
 
-	// start an Etcd server
 	etcdServer, err = libetcd.CreateEtcdInstance(namespace, rootfs)
 	if err != nil {
 		log.Println(" ")

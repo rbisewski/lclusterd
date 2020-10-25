@@ -1,17 +1,13 @@
-/*
- * File: process.go
- *
- * Description: functions for handling libcontainer processes
- */
 package libetcd
 
 import (
-	"github.com/opencontainers/runc/libcontainer"
-	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/opencontainers/runc/libcontainer"
+	_ "github.com/opencontainers/runc/libcontainer/nsenter"
 )
 
 // The process definition.

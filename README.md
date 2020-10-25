@@ -16,12 +16,14 @@ Note that while this is a work in progress, it does somewhat partially work.
 The program itself was designed around a standard Debian Linux environment,
 with the following requirements:
 
-* docker (not actually needed, but as a quick method of assembling a rootfs)
-* etcd 
-* libcontainer 
 * linux kernel 3.19+
 * golang 1.8+
+* libcontainer
+* docker (not actually needed, but as a quick method of assembling a rootfs)
+* etcd
 * grpc
+* protobuf library includes
+* UNIX filesystem-like structure to be mounted as a rootfs
 
 Popular distros, such as Debian or Fedora, will likely already contain
 Linux kernel 4.0 or higher. Most or all of the above requirements are
@@ -29,24 +31,8 @@ probably going to satisfied given the popularity of docker and the ease of
 obtaining dependencies via go get.
 
 In the event that this program does not appear to work on a particular
-non-mainstream distro. Feel free to contact me if you need assistance
+non-mainstream distro, feel free to contact me if you need assistance
 and I will make note of it in future versions of this readme.
-
-# Pre-installation environment setup
-
-You can obtain the codebase via git:
-
-```bash
-git clone https://github.com/rbisewski/lclusterd
-```
-
-As noted above, this application requires a number of components in order
-to actually run:
-
-* gRPC
-* etcd
-* protobuf library includes
-* UNIX filesystem-like structure to be mounted as a rootfs
 
 That said, an easy Makefile target has been provided to prepare a system:
 
@@ -64,8 +50,8 @@ as follows:
 make
 ```
 
-Later on, if you need to make changes to the PB prototype file, you can also
-run the following command:
+Later on, if you need to make changes to the protobuf prototype file, you
+can also run the following command:
 
 ```bash
 make regen_proto

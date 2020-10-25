@@ -13,11 +13,12 @@
 package main
 
 import (
-	libetcd "./lib/etcd"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+
+	libetcd "./lib/etcd"
 )
 
 var (

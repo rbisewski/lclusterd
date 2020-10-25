@@ -13,7 +13,7 @@
 
 all: build
 
-protobuf:
+protobuf_deps:
 	@wget "https://github.com/protocolbuffers/protobuf/releases/download/v3.13.0/protoc-3.13.0-linux-x86_64.zip" -qO /tmp/protoc.zip
 	@mkdir -p /tmp/protoc
 	@unzip /tmp/protoc.zip -d /tmp/protoc
@@ -29,14 +29,13 @@ grpc_deps:
 	@go get -u google.golang.org/grpc
 	@go get -u github.com/golang/protobuf/protoc-gen-go
 
-etcd_docker:
-	@echo "Setting up etcd via docker..."
-	@docker run -d --name etcd-server \
-	      --publish 2379:2379 \
-	      --publish 2380:2380 \
-	      --env ALLOW_NONE_AUTHENTICATION=yes \
-	      --env ETCD_ADVERTISE_CLIENT_URLS=http://etcd-server:2379 \
-	      bitnami/etcd:latest
+etcd_deps:
+	@echo "Obtaining etcd..."
+	@wget https://github.com/etcd-io/etcd/releases/download/v3.4.13/etcd-v3.4.13-linux-amd64.tar.gz -qO /tmp/etcd.tar.gz
+	@tar -C /tmp/ -zxvf /tmp/etcd.tar.gz
+	@sudo mv /tmp/etcd-v3.4.13-linux-amd64/etcd /usr/local/bin/etcd
+	@sudo mv /tmp/etcd-v3.4.13-linux-amd64/etcdctl /usr/local/bin/etcdctl
+	@rm -rf /tmp/etcd-v3.4.13-linux-amd64/
 
 example_rootfs:
 	@go get github.com/opencontainers/runc/libcontainer
@@ -58,7 +57,7 @@ client:
 	@echo "Building lcluster client..."
 	@go build -o lclusterc ./client
 
-prep: grpc_deps etcd_docker example_rootfs
+prep: protobuf_deps grpc_deps etcd_deps example_rootfs
 	@echo "Finished setting up the infrastructure needed for lclusterd."
 
 build: regen_proto lclusterd client 
